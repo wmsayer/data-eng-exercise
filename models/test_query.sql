@@ -1,0 +1,1 @@
+select * from weather.daily_16_total limit 5
