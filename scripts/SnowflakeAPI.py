@@ -1,5 +1,5 @@
 import pandas as pd
-import app.scripts.Admin as Admin
+import scripts.Admin as Admin
 import snowflake
 from snowflake.connector.pandas_tools import write_pandas, pd_writer
 import streamlit as st
