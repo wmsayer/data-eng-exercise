@@ -8,7 +8,7 @@ SNWFLK_SCHEMA = "dbt_wsayer2"
 SNWFLK_API = snwflk.SnowflakeAPI(db=SNWFLK_DB, schema=SNWFLK_SCHEMA, profile="streamlit")
 
 test_query = """
-SELECT entity, SUM(usd_value) AS usd_value
+SELECT ENTITY, SUM(usd_value) AS USD_VALUE
 FROM curr_entity_bals
 WHERE usd_value > 1000
     AND entity IN ('Coinbase', 'Kraken', 'Binance')
@@ -16,4 +16,4 @@ GROUP BY 1
 """
 test_df = SNWFLK_API.run_get_query(test_query)
 
-st.bar_chart(test_df, x="entity", y="usd_value")
+st.bar_chart(test_df, x="ENTITY", y="USD_VALUE")
