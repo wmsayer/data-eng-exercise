@@ -1,6 +1,6 @@
 import pandas as pd
-import app.scripts.Admin as Admin
-import app.scripts.SnowflakeAPI as snwflk
+import scripts.Admin as Admin
+import scripts.SnowflakeAPI as snwflk
 from shroomdk import ShroomDK
 import json
 import requests

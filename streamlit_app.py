@@ -1,7 +1,5 @@
 import streamlit as st
-import pandas as pd
-import numpy as np
-import app.scripts.SnowflakeAPI as snwflk
+import scripts.SnowflakeAPI as snwflk
 
 # -r https://raw.githubusercontent.com/snowflakedb/snowflake-connector-python/v2.7.9/tested_requirements/requirements_39.reqs
 
