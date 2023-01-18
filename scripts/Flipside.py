@@ -117,6 +117,7 @@ class Flipside:
         self.df = self.df.loc[self.df["HAS_PRICE"], :]
         self.df = self.df.loc[self.df["HAS_DECIMAL"], :]
         self.df["CURRENT_BAL_UNADJ"] = self.df["CURRENT_BAL_UNADJ"].astype(str)
+        self.df["NETWORK"] = "Ethereum"
         self.df.sort_values(by="SYMBOL", inplace=True)
 
         if write_snwflk:
