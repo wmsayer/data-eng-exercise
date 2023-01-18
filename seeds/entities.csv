@@ -1,0 +1,6 @@
+entity,entity_type
+Kraken,exchange
+Coinbase,exchange
+Binance,exchange
+Binance US,exchange
+Wintermute,market maker
