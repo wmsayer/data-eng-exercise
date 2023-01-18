@@ -30,15 +30,19 @@ class Flipside:
         self.snwflk_db = "FLIPSIDE"
         self.snwflk_prof = "chip"
 
+        self.log_book = {
+            "addr_bals": {"fn": self.get_eth_addr_bals, "freq": 5*60}
+        }
+
     def run_query(self, query):
         self.query = query
 
-        print("Running Flipside query...")
+        # print("Running Flipside query...")
         if self.use_sdk:
             self.run_flipside_query_sdk()
         else:
             self.run_flipside_query_ll()
-        print("\tFlipside query complete.")
+        # print("\tFlipside query complete.")
 
         self.df.columns = [c.upper() for c in self.df.columns]  # required all caps for Snowflake
 
@@ -101,7 +105,7 @@ class Flipside:
         return result_df
 
     def get_eth_addr_bals(self, write_snwflk=True):
-        addr_list_path = "/seeds/network_address_labels.csv"
+        addr_list_path = "C:/Users/wsaye/PycharmProjects/data-eng-exercise/seeds/network_address_labels.csv"
         addr_list_df = pd.read_csv(addr_list_path)
         addr_list = list(addr_list_df["address"].values)
         addr_list_sql_str = ", ".join([f"LOWER('{a}')" for a in addr_list])
@@ -131,7 +135,7 @@ class Flipside:
 
 if __name__ == "__main__":
     test_api = Flipside(use_sdk=True)
-    test_df = test_api.get_eth_addr_bals()
+    test_df = test_api.get_eth_addr_bals(write_snwflk=True)
     print(test_df)
     test_output_path = "/data/flipside_test.csv"
     test_df.to_csv(test_output_path, index=False)
