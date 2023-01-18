@@ -3,6 +3,13 @@ import scripts.Admin as Admin
 import snowflake
 from snowflake.connector.pandas_tools import write_pandas, pd_writer
 import streamlit as st
+import logging
+
+# to supress logging messages
+for name in logging.Logger.manager.loggerDict.keys():
+    if 'snowflake' in name:
+        logging.getLogger(name).setLevel(logging.WARNING)
+        logging.getLogger(name).propagate = False
 
 CNNX_PATH = "C:/Users/wsaye/Desktop/private_api/snowflake.json"
 DEFAULT_PROFILE = "chip"
@@ -10,12 +17,13 @@ DEFAULT_WH = "TRANSFORMING"
 
 
 class SnowflakeAPI:
-    def __init__(self, db, schema, profile="chip", wh=DEFAULT_WH):
+    def __init__(self, db, schema, profile="chip", wh=DEFAULT_WH, print_summ=False):
         self.profile = profile
         self.db = db
         self.schema = schema
         self.wh = wh
         self.cnnx_params = self.get_cnnx_params()
+        self.print_summ = print_summ
 
     def get_cnnx_params(self):
         if self.profile == "streamlit":
@@ -36,12 +44,16 @@ class SnowflakeAPI:
         return cnnx
 
     def run_query(self, sql_query):
-        print("Running Snowflake query...")
+        if self.print_summ:
+            print("Running Snowflake query...")
+
         cnnx = self.get_cnnx()
         cursor = cnnx.cursor()
         cursor.execute(sql_query)
         cursor.close()
-        print("\tSnowflake query complete.")
+
+        if self.print_summ:
+            print("\tSnowflake query complete.")
 
     def run_get_query(self, sql_query):
         results_df = pd.read_sql(sql_query, con=self.get_cnnx())
@@ -56,26 +68,25 @@ class SnowflakeAPI:
             drop_query = f"DELETE FROM {self.db}.{self.schema}.{table}"
             self.run_query(drop_query)
 
-        print("Writing to Snowflake...")
-        success, nchunks, nrows, output = write_pandas(cnnx, df, table)
-        print(f"\tSnowflake success: {success}\n\tChunks: {nchunks}\n\tRows: {nrows}")
+        if self.print_summ:
+            print("Writing to Snowflake...")
 
-    def write_df_ll(self, df, table, mode="replace"):
-        """Possible modes are 'fail', 'replace', 'append'."""
-        cnnx = self.get_cnnx()
-        num_rows = df.to_sql(table, cnnx, if_exists=mode, index=False, method=pd_writer)
-        print(num_rows)
+        success, nchunks, nrows, output = write_pandas(cnnx, df, table)
+
+        if self.print_summ:
+            print(f"\tSnowflake success: {success}, Chunks: {nchunks}, Rows: {nrows}")
 
 
 if __name__ == "__main__":
     test_api = SnowflakeAPI(db="flipside", schema="dbt_wsayer2")
     test_cnnx = test_api.get_cnnx()
     test_query = """
-    SELECT entity, SUM(usd_value)
-    FROM curr_entity_bals
-    WHERE usd_value > 1000
-        AND entity IN ('Coinbase', 'Kraken', 'Binance')
-    GROUP BY 1
+        SELECT 
+            NAME AS "Name", 
+            SCORE + 1 AS "Rank",
+            RANK_TIMESTAMP
+        FROM flipside.coingecko.trending
+        WHERE RANK_TIMESTAMP = (SELECT MAX(RANK_TIMESTAMP) FROM flipside.coingecko.trending)
     """
     test_df = test_api.run_get_query(test_query)
     print(test_df)
