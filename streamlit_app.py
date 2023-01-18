@@ -53,3 +53,4 @@ def build_trending():
 st.title("Chip's Crypto Data Dashboard")
 build_entity_bar_chart()
 build_crypto_prices()
+build_trending()
