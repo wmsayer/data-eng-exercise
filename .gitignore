@@ -4,5 +4,6 @@ dbt_packages/
 logs/
 venv/
 data/
-.idea/
-/*/__pycache__/
+**/.idea/
+**/__pycache__/
+**/.streamlit/secrets.toml

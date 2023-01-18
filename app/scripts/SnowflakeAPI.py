@@ -1,26 +1,35 @@
-import scripts.Admin as Admin
+import pandas as pd
+
+import app.scripts.Admin as Admin
 import snowflake
 from snowflake.connector.pandas_tools import write_pandas, pd_writer
+import streamlit as st
 
 CNNX_PATH = "C:/Users/wsaye/Desktop/private_api/snowflake.json"
-CNNX_PROFILES = Admin.json_load(CNNX_PATH)
 DEFAULT_PROFILE = "chip"
 DEFAULT_WH = "TRANSFORMING"
 
 
 class SnowflakeAPI:
-    def __init__(self, db, schema, profile="chip"):
+    def __init__(self, db, schema, profile="chip", wh=DEFAULT_WH):
         self.profile = profile
         self.db = db
         self.schema = schema
-        self.wh =DEFAULT_WH
-        self.cnnx_params = CNNX_PROFILES[self.profile]
+        self.wh = wh
+        self.cnnx_params = self.get_cnnx_params()
+
+    def get_cnnx_params(self):
+        if self.profile == "streamlit":
+            cnnx_params = st.secrets
+        else:
+            cnnx_params = Admin.json_load(CNNX_PATH)[self.profile]
+        return cnnx_params
 
     def get_cnnx(self):
         cnnx = snowflake.connector.connect(
-            user=self.cnnx_params["user"],
-            password=self.cnnx_params["pwd"],
-            account=self.cnnx_params["account"],
+            user=self.cnnx_params["SNOWFLAKE_USER"],
+            password=self.cnnx_params["SNOWFLAKE_PWD"],
+            account=self.cnnx_params["SNOWFLAKE_ACCOUNT"],
             database=self.db,
             schema=self.schema,
             warehouse=self.wh
@@ -34,6 +43,10 @@ class SnowflakeAPI:
         cursor.execute(sql_query)
         cursor.close()
         print("\tSnowflake query complete.")
+
+    def run_get_query(self, sql_query):
+        results_df = pd.read_sql(sql_query, con=self.get_cnnx())
+        return results_df
 
     def write_df(self, df, table,  replace=False):
         """This method appends by default."""
@@ -56,7 +69,14 @@ class SnowflakeAPI:
 
 
 if __name__ == "__main__":
-    test_api = SnowflakeAPI(db="flipside")
-    print(test_api.cnnx_params)
+    test_api = SnowflakeAPI(db="flipside", schema="dbt_wsayer2")
     test_cnnx = test_api.get_cnnx()
-    print(test_cnnx)
+    test_query = """
+    SELECT entity, SUM(usd_value)
+    FROM curr_entity_bals
+    WHERE usd_value > 1000
+        AND entity IN ('Coinbase', 'Kraken', 'Binance')
+    GROUP BY 1
+    """
+    test_df = test_api.run_get_query(test_query)
+    print(test_df)
