@@ -14,7 +14,9 @@ from flask import Flask, request, render_template, Response
 #     from application.server.SQLAdmin import *
 #     from application.server.handle import *
 
-app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
+# app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
+# Create app
+app = Flask(__name__)
 # CORS(app)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://cs411ccsquad_admin:password;uiuc@localhost/cs411ccsquad_FlicksNDrinks'
 # db = SQLAlchemy(app)
