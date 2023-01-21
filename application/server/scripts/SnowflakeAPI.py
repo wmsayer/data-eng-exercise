@@ -30,9 +30,9 @@ class SnowflakeAPI:
         print(f"This is my profile: {self.profile}")
         if self.profile == "server":
             cnnx_params = {
-                "SNOWFLAKE_USER": os.getenv('SNOWFLAKE_USER'),
-                "SNOWFLAKE_PWD": os.getenv('SNOWFLAKE_PWD'),
-                "SNOWFLAKE_ACCOUNT": os.getenv('SNOWFLAKE_ACCOUNT'),
+                "SNOWFLAKE_USER": os.environ['SNOWFLAKE_USER'],
+                "SNOWFLAKE_PWD": os.environ['SNOWFLAKE_PWD'],
+                "SNOWFLAKE_ACCOUNT": os.environ['SNOWFLAKE_ACCOUNT'],
             }
         else:
             cnnx_params = Admin.json_load(CNNX_PATH)[self.profile]
