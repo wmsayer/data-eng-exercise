@@ -7,15 +7,13 @@ import os
 from dotenv import load_dotenv
 
 
-load_dotenv('/home/ubuntu/.bashrc')
-
-
 # to supress logging messages
 for name in logging.Logger.manager.loggerDict.keys():
     if 'snowflake' in name:
         logging.getLogger(name).setLevel(logging.WARNING)
         logging.getLogger(name).propagate = False
 
+UBUNTU_PROF = '/home/ubuntu/.bashrc'
 CNNX_PATH = "C:/Users/wsaye/Desktop/private_api/snowflake.json"
 DEFAULT_PROFILE = "chip"
 DEFAULT_WH = "TRANSFORMING"
@@ -29,11 +27,10 @@ class SnowflakeAPI:
         self.wh = wh
         self.cnnx_params = self.get_cnnx_params()
         self.print_summ = print_summ
-        print(f"These are my params: {self.cnnx_params}")
 
     def get_cnnx_params(self):
-        print(f"This is my profile: {self.profile}")
         if self.profile == "server":
+            load_dotenv(UBUNTU_PROF)
             cnnx_params = {
                 "SNOWFLAKE_USER": os.environ.get('SNOWFLAKE_USER'),
                 "SNOWFLAKE_PWD": os.environ.get('SNOWFLAKE_PWD'),
