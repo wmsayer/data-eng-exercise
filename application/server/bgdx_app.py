@@ -4,9 +4,13 @@ import plotly.graph_objects as go
 from dash import dcc
 import plotly.express as px
 from dash.dependencies import Input, Output
+from flask import Flask
 
-app = dash.Dash()
 
+# app = dash.Dash()
+
+server = Flask(__name__)
+app = dash.Dash(name=__name__, server=server)
 df = px.data.stocks()
 
 app.layout = html.Div(id='parent', children=[
@@ -40,7 +44,7 @@ def graph_update(dropdown_value):
 
 
 if __name__ == '__main__':
-   app.run_server()
+   app.run()
 
 
 
