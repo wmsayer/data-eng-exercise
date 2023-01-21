@@ -4,6 +4,11 @@ import snowflake
 from snowflake.connector.pandas_tools import write_pandas
 import logging
 import os
+from dotenv import load_dotenv
+
+
+load_dotenv('/home/ubuntu/.bashrc')
+
 
 # to supress logging messages
 for name in logging.Logger.manager.loggerDict.keys():
@@ -30,9 +35,9 @@ class SnowflakeAPI:
         print(f"This is my profile: {self.profile}")
         if self.profile == "server":
             cnnx_params = {
-                "SNOWFLAKE_USER": os.environ['SNOWFLAKE_USER'],
-                "SNOWFLAKE_PWD": os.environ['SNOWFLAKE_PWD'],
-                "SNOWFLAKE_ACCOUNT": os.environ['SNOWFLAKE_ACCOUNT'],
+                "SNOWFLAKE_USER": os.environ.get('SNOWFLAKE_USER'),
+                "SNOWFLAKE_PWD": os.environ.get('SNOWFLAKE_PWD'),
+                "SNOWFLAKE_ACCOUNT": os.environ.get('SNOWFLAKE_ACCOUNT'),
             }
         else:
             cnnx_params = Admin.json_load(CNNX_PATH)[self.profile]
