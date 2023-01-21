@@ -1,5 +1,5 @@
 import pandas as pd
-import application.server.scripts.Admin as Admin
+import scripts.Admin as Admin
 import snowflake
 from snowflake.connector.pandas_tools import write_pandas
 import logging
