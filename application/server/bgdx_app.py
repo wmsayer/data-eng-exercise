@@ -1,22 +1,20 @@
-import dash
-from dash import html
-import plotly.graph_objects as go
-from dash import dcc
-import plotly.express as px
-from dash.dependencies import Input, Output
-from flask import Flask
 import scripts.SnowflakeAPI as snwflk
+import pandas as pd
+import dash
+from dash import html, dcc
+from dash.dependencies import Input, Output
 from dash import dash_table
 import dash_bootstrap_components as dbc
-import pandas as pd
-from dotenv import load_dotenv
+import plotly.graph_objects as go
+import plotly.express as px
+from flask import Flask
+
 
 if __name__ == '__main__':
     SNWFLK_PROF = "chip"
 else:
     SNWFLK_PROF = "server"
 
-load_dotenv('~/.bashrc')
 
 SNWFLK_DB = "flipside"
 SNWFLK_SCHEMA = "dbt_wsayer2"
@@ -40,7 +38,7 @@ def get_btc_price_data():
 df = get_btc_price_data()
 
 app.layout = html.Div(id='parent', children=[
-   html.H1(id='H1', children='Styling using good components', style={'textAlign': 'center', \
+   html.H1(id='H1', children='Styling using good components YAY', style={'textAlign': 'center', \
                                                                      'marginTop': 40, 'marginBottom': 40}),
 
    dcc.Dropdown(id='dropdown',
