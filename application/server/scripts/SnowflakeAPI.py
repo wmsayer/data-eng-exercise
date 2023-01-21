@@ -1,9 +1,9 @@
 import pandas as pd
-import scripts.Admin as Admin
+import application.server.scripts.Admin as Admin
 import snowflake
-from snowflake.connector.pandas_tools import write_pandas, pd_writer
-import streamlit as st
+from snowflake.connector.pandas_tools import write_pandas
 import logging
+import os
 
 # to supress logging messages
 for name in logging.Logger.manager.loggerDict.keys():
@@ -26,8 +26,12 @@ class SnowflakeAPI:
         self.print_summ = print_summ
 
     def get_cnnx_params(self):
-        if self.profile == "streamlit":
-            cnnx_params = st.secrets
+        if self.profile == "server":
+            cnnx_params = {
+                "SNOWFLAKE_USER": os.getenv('SNOWFLAKE_USER'),
+                "SNOWFLAKE_PWD": os.getenv('SNOWFLAKE_PWD'),
+                "SNOWFLAKE_ACCOUNT": os.getenv('SNOWFLAKE_ACCOUNT'),
+            }
         else:
             cnnx_params = Admin.json_load(CNNX_PATH)[self.profile]
         return cnnx_params
@@ -81,12 +85,8 @@ if __name__ == "__main__":
     test_api = SnowflakeAPI(db="flipside", schema="dbt_wsayer2")
     test_cnnx = test_api.get_cnnx()
     test_query = """
-        SELECT 
-            NAME AS "Name", 
-            SCORE + 1 AS "Rank",
-            RANK_TIMESTAMP
-        FROM flipside.coingecko.trending
-        WHERE RANK_TIMESTAMP = (SELECT MAX(RANK_TIMESTAMP) FROM flipside.coingecko.trending)
+    SELECT *
+    FROM flipside.coingecko.historical_prices
     """
     test_df = test_api.run_get_query(test_query)
     print(test_df)

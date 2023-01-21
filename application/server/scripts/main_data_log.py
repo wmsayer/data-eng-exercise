@@ -1,5 +1,5 @@
-import scripts.Flipside as flip
-import scripts.CoinGeckoAPI as cg
+import application.server.scripts.Flipside as flip
+import application.server.scripts.CoinGeckoAPI as cg
 import time
 
 
