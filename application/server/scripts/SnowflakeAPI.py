@@ -24,8 +24,10 @@ class SnowflakeAPI:
         self.wh = wh
         self.cnnx_params = self.get_cnnx_params()
         self.print_summ = print_summ
+        print(f"These are my params: {self.cnnx_params}")
 
     def get_cnnx_params(self):
+        print(f"This is my profile: {self.profile}")
         if self.profile == "server":
             cnnx_params = {
                 "SNOWFLAKE_USER": os.getenv('SNOWFLAKE_USER'),
