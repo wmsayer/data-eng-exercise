@@ -9,11 +9,14 @@ import scripts.SnowflakeAPI as snwflk
 from dash import dash_table
 import dash_bootstrap_components as dbc
 import pandas as pd
+from dotenv import load_dotenv
 
 if __name__ == '__main__':
     SNWFLK_PROF = "chip"
 else:
     SNWFLK_PROF = "server"
+
+load_dotenv('~/.bashrc')
 
 SNWFLK_DB = "flipside"
 SNWFLK_SCHEMA = "dbt_wsayer2"
