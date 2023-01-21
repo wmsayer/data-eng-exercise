@@ -1,6 +1,6 @@
 import pandas as pd
-import scripts.Admin as Admin
-import scripts.SnowflakeAPI as snwflk
+import application.server.scripts.Admin as Admin
+import application.server.scripts.SnowflakeAPI as snwflk
 from shroomdk import ShroomDK
 import json
 import requests
@@ -105,7 +105,7 @@ class Flipside:
         return result_df
 
     def get_eth_addr_bals(self, write_snwflk=True):
-        addr_list_path = "C:/Users/wsaye/PycharmProjects/data-eng-exercise/seeds/network_address_labels.csv"
+        addr_list_path = "/seeds/network_address_labels.csv"
         addr_list_df = pd.read_csv(addr_list_path)
         addr_list = list(addr_list_df["address"].values)
         addr_list_sql_str = ", ".join([f"LOWER('{a}')" for a in addr_list])

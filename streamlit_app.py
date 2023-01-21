@@ -1,6 +1,6 @@
 import streamlit as st
-import scripts.SnowflakeAPI as snwflk
-import scripts.Admin as Admin
+import application.server.scripts.SnowflakeAPI as snwflk
+import application.server.scripts.Admin as Admin
 
 # -r https://raw.githubusercontent.com/snowflakedb/snowflake-connector-python/v2.7.9/tested_requirements/requirements_39.reqs
 
