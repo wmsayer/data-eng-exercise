@@ -5,7 +5,7 @@ from dash import dcc
 import plotly.express as px
 from dash.dependencies import Input, Output
 from flask import Flask
-import application.server.scripts.SnowflakeAPI as snwflk
+import scripts.SnowflakeAPI as snwflk
 from dash import dash_table
 import dash_bootstrap_components as dbc
 import pandas as pd
