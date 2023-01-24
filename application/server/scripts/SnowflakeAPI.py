@@ -21,7 +21,7 @@ SNOWFLAKE_USER = os.environ.get('SNOWFLAKE_USER')
 SNOWFLAKE_PWD = os.environ.get('SNOWFLAKE_PWD')
 SNOWFLAKE_ACCOUNT = os.environ.get('SNOWFLAKE_ACCOUNT')
 DEFAULT_DB = os.environ.get('SNOWFLAKE_DB')
-DEFAULT_WH = "TRANSFORMING"
+DEFAULT_WH = "LOGGING"
 
 
 class SnowflakeAPI:
@@ -58,7 +58,7 @@ class SnowflakeAPI:
         results_df = pd.read_sql(sql_query, con=self.get_cnnx())
         return results_df
 
-    def write_df(self, df, table,  replace=False):
+    def write_df(self, df, table,  replace=False, print_summ=True):
         """This method appends by default."""
 
         cnnx = self.get_cnnx()
@@ -67,12 +67,13 @@ class SnowflakeAPI:
             drop_query = f"DELETE FROM {self.db}.{self.schema}.{table}"
             self.run_query(drop_query)
 
-        if self.print_summ:
-            print("Writing to Snowflake...")
+        # if print_summ:
+        #     print("Writing to Snowflake...")
 
+        df.columns = [c.upper() for c in df.columns]
         success, nchunks, nrows, output = write_pandas(cnnx, df, table)
 
-        if self.print_summ:
+        if print_summ:
             print(f"\tSnowflake success: {success}, Chunks: {nchunks}, Rows: {nrows}")
 
 

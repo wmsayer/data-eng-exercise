@@ -40,6 +40,7 @@ def run_rest_get(url, params={}, headers={}, print_summ=True, print_resp=False):
 
 
 def format_num_to_sig_figs(val, sig_figs=3, prefix="$"):
+    """Assumes single value, not array."""
     power = np.floor(np.log10(val))
 
     if power >= 0:

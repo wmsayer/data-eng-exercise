@@ -78,10 +78,8 @@ class Flipside:
         self.df.sort_values(by="SYMBOL", inplace=True)
 
         if write_snwflk:
-            snwflk_schema = 'ACCOUNT_BALS'
-            snwflk_table = 'CURR_ETH_BALS'
-            snwflk_api = snwflk.SnowflakeAPI(schema=snwflk_schema, db=self.snwflk_db)
-            snwflk_api.write_df(self.df, snwflk_table, replace=True)
+            snwflk_api = snwflk.SnowflakeAPI(schema='ACCOUNT_BALS', db=self.snwflk_db)
+            snwflk_api.write_df(self.df, table='CURR_ETH_BALS', replace=True)
 
         return self.df
 
