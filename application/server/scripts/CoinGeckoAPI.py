@@ -3,7 +3,9 @@ import application.server.scripts.SnowflakeAPI as snwflk
 import pandas as pd
 import time
 import numpy as np
+import pathlib
 
+PROJECT_ROOT = "%s" % pathlib.Path(__file__).parent.parent.parent.parent.absolute()
 
 # CG Documentation
 # https://www.coingecko.com/en/api/documentation
@@ -16,12 +18,19 @@ class CoinGeckoAPI:
         self.print_summ = False
         self.snwflk_db = "FLIPSIDE"
 
+        self.api_mapper = self.get_api_map()
+
         self.assets = assets
 
         self.log_book = {
             "trending": {"fn": self.get_trending, "freq": 60*5},
-            "prices": {"fn": self.get_simple_prices, "freq": 30}
+            # "prices": {"fn": self.get_simple_prices, "freq": 30}
         }
+
+    def get_api_map(self):
+        mapper_path = "/".join([PROJECT_ROOT, "seeds/project_api_map.csv"])
+        api_mapper = pd.read_csv(mapper_path).set_index(keys="asset")
+        return api_mapper
 
     def get_trending(self, write_snwflk=True):
         url = "/".join([self.api_root, "search/trending"])
@@ -32,19 +41,18 @@ class CoinGeckoAPI:
         result_df = result_df[keep_cols]
 
         if write_snwflk:
-            result_df.columns = [c.upper() for c in result_df.columns]
-            snwflk_schema = 'COINGECKO'
-            snwflk_table = 'TRENDING'
-            snwflk_api = snwflk.SnowflakeAPI(db=self.snwflk_db, schema=snwflk_schema)
-            snwflk_api.write_df(result_df, snwflk_table, replace=False)
+            snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
+            snwflk_api.write_df(result_df, table='TRENDING', replace=False)
 
         return result_df
 
     def get_simple_prices(self, write_snwflk=True):
 
+        asset_ids = list(self.api_mapper.loc[self.assets, "cg_id"].values)
+
         url = "/".join([self.api_root, "simple/price"])
         params = {
-            "ids": ",".join(self.assets),
+            "ids": ",".join(asset_ids),
             "vs_currencies": "usd",
             "include_market_cap": "true",
             "include_24hr_vol": "true"
@@ -124,9 +132,11 @@ class CoinGeckoAPI:
 
 
 if __name__ == "__main__":
-    test_api = CoinGeckoAPI()
+    test_assets = ["BTC", "ETH", "ADA", "MATIC", "SOL"]
+    test_api = CoinGeckoAPI(test_assets)
     # test_api.log_cg_to_snwflk()
-    test_assets = [("bitcoin", "BTC")]
-    test_df = test_api.get_asset_mkt_chart(test_assets, 30, base="usd", print_summ=True)
+    # test_assets = [("bitcoin", "BTC")]
+    # test_df = test_api.get_asset_mkt_chart(test_assets, 30, base="usd", write_snwflk=False, print_summ=True)
+    test_df = test_api.get_simple_prices(write_snwflk=False)
     print(test_df.columns)
     print(test_df)

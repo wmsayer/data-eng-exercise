@@ -1,13 +1,17 @@
 import scripts.Flipside as flip
 import scripts.CoinGeckoAPI as cg
+import scripts.CryptowatchAPI as cw
 import time
 
 
 class DataLogger():
-    def __init__(self, cg_assets=[]):
-        self.cg_assets = cg_assets
-        self.apis = [cg.CoinGeckoAPI(assets=self.cg_assets),
-                     flip.Flipside()]
+    def __init__(self, assets):
+        self.assets = assets
+        self.apis = [
+            cg.CoinGeckoAPI(assets=self.assets),
+            cw.CryptowatchAPI(assets=self.assets),
+            # flip.Flipside()
+        ]
         self.min_sleep = self.get_min_sleep()
 
     def get_min_sleep(self):
