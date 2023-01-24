@@ -37,3 +37,4 @@ models:
     # Applies to all files under models/flipside/
     flipside:
       materialized: view
+
