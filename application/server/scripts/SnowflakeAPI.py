@@ -1,9 +1,9 @@
 import pandas as pd
-import scripts.Admin as Admin
 import snowflake
 from snowflake.connector.pandas_tools import write_pandas
 import logging
 import os
+from sys import platform
 from dotenv import load_dotenv
 
 
@@ -13,38 +13,29 @@ for name in logging.Logger.manager.loggerDict.keys():
         logging.getLogger(name).setLevel(logging.WARNING)
         logging.getLogger(name).propagate = False
 
-UBUNTU_PROF = '/home/ubuntu/.bashrc'
-CNNX_PATH = "C:/Users/wsaye/Desktop/private_api/snowflake.json"
-DEFAULT_PROFILE = "chip"
+if platform == "linux":
+    load_dotenv('/home/ubuntu/.bashrc')
+
+
+SNOWFLAKE_USER = os.environ.get('SNOWFLAKE_USER')
+SNOWFLAKE_PWD = os.environ.get('SNOWFLAKE_PWD')
+SNOWFLAKE_ACCOUNT = os.environ.get('SNOWFLAKE_ACCOUNT')
+DEFAULT_DB = os.environ.get('SNOWFLAKE_DB')
 DEFAULT_WH = "TRANSFORMING"
 
 
 class SnowflakeAPI:
-    def __init__(self, db, schema, profile="chip", wh=DEFAULT_WH, print_summ=False):
-        self.profile = profile
+    def __init__(self, schema, db=DEFAULT_DB, wh=DEFAULT_WH, print_summ=False):
         self.db = db
         self.schema = schema
         self.wh = wh
-        self.cnnx_params = self.get_cnnx_params()
         self.print_summ = print_summ
-
-    def get_cnnx_params(self):
-        if self.profile == "server":
-            load_dotenv(UBUNTU_PROF)
-            cnnx_params = {
-                "SNOWFLAKE_USER": os.environ.get('SNOWFLAKE_USER'),
-                "SNOWFLAKE_PWD": os.environ.get('SNOWFLAKE_PWD'),
-                "SNOWFLAKE_ACCOUNT": os.environ.get('SNOWFLAKE_ACCOUNT'),
-            }
-        else:
-            cnnx_params = Admin.json_load(CNNX_PATH)[self.profile]
-        return cnnx_params
 
     def get_cnnx(self):
         cnnx = snowflake.connector.connect(
-            user=self.cnnx_params["SNOWFLAKE_USER"],
-            password=self.cnnx_params["SNOWFLAKE_PWD"],
-            account=self.cnnx_params["SNOWFLAKE_ACCOUNT"],
+            user=SNOWFLAKE_USER,
+            password=SNOWFLAKE_PWD,
+            account=SNOWFLAKE_ACCOUNT,
             database=self.db,
             schema=self.schema,
             warehouse=self.wh
