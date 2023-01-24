@@ -1,0 +1,156 @@
+create warehouse transforming;
+create database raw;
+create schema raw.jaffle_shop;
+create schema raw.stripe;
+
+drop database raw;
+
+create table raw.jaffle_shop.customers
+( id integer,
+  first_name varchar,
+  last_name varchar
+);
+
+copy into raw.jaffle_shop.customers (id, first_name, last_name)
+from 's3://dbt-tutorial-public/jaffle_shop_customers.csv'
+file_format = (
+  type = 'CSV'
+  field_delimiter = ','
+  skip_header = 1
+  );
+
+create table raw.jaffle_shop.orders
+( id integer,
+  user_id integer,
+  order_date date,
+  status varchar,
+  _etl_loaded_at timestamp default current_timestamp
+);
+
+copy into raw.jaffle_shop.orders (id, user_id, order_date, status)
+from 's3://dbt-tutorial-public/jaffle_shop_orders.csv'
+file_format = (
+  type = 'CSV'
+  field_delimiter = ','
+  skip_header = 1
+  );
+
+
+create table raw.stripe.payment
+( id integer,
+  orderid integer,
+  paymentmethod varchar,
+  status varchar,
+  amount integer,
+  created date,
+  _batched_at timestamp default current_timestamp
+);
+
+copy into raw.stripe.payment (id, orderid, paymentmethod, status, amount, created)
+from 's3://dbt-tutorial-public/stripe_payments.csv'
+file_format = (
+  type = 'CSV'
+  field_delimiter = ','
+  skip_header = 1
+  );
+
+
+
+select * from information_schema.packages where language = 'python';
+
+
+create database flipside;
+create schema flipside.account_bals;
+
+
+drop table flipside.account_bals.curr_eth_bals;
+delete from flipside.account_bals.curr_eth_bals;
+
+create table flipside.account_bals.curr_eth_bals
+(last_activity_block integer,
+ last_activity_block_timestamp datetime,
+ user_address varchar,
+ contract_address varchar,
+ current_bal_unadj varchar,
+ current_bal double,
+ usd_value_last_activity double,
+ usd_value_now double,
+ network varchar,
+ symbol varchar,
+ token_name varchar,
+ decimals integer,
+ has_decimal boolean,
+ has_price boolean,
+ last_recorded_price datetime,
+ _etl_loaded_at datetime default current_timestamp
+);
+
+
+create schema flipside.entity_bals;
+create table flipside.entity_bals.curr_bals
+(last_activity_block integer,
+ last_activity_block_timestamp datetime,
+ user_address varchar,
+ contract_address varchar,
+ current_bal_unadj varchar,
+ current_bal double,
+ usd_value_last_activity double,
+ usd_value_now double,
+ symbol varchar,
+ token_name varchar,
+ decimals integer,
+ has_decimal boolean,
+ has_price boolean,
+ last_recorded_price datetime
+);
+
+create schema flipside.coingecko;
+create table flipside.coingecko.prices
+(asset varchar,
+ usd double,
+ usd_market_cap double,
+ usd_24h_vol double,
+ price_timestamp datetime default current_timestamp
+);
+
+create table flipside.coingecko.trending
+(id varchar,
+ name varchar,
+ symbol varchar,
+ market_cap_rank int,
+ score int,
+ rank_timestamp datetime default current_timestamp
+);
+
+SELECT MAX(rank_timestamp) FROM flipside.coingecko.trending;
+
+
+create table flipside.coingecko.prices
+(asset varchar,
+ usd double,
+ usd_market_cap double,
+ usd_24h_vol double,
+ price_timestamp datetime default current_timestamp
+);
+
+delete from flipside.coingecko.historical_prices;
+
+create table flipside.coingecko.historical_prices
+(time datetime,
+ prices double,
+ market_caps double,
+ total_volumes double,
+ asset varchar,
+ etl_timestamp datetime default current_timestamp
+);
+
+
+
+create schema flipside.cryptowatch;
+create table flipside.cryptowatch.spot_prices
+(exchange varchar,
+ asset varchar,
+ base varchar,
+ price double,
+ _etl_timestamp datetime default current_timestamp
+);

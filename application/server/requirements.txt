@@ -1,0 +1,10 @@
+wheel
+uwsgi
+flask
+dash
+python-dotenv
+pandas
+numpy
+dash_bootstrap_components
+snowflake-connector-python
+
