@@ -7,3 +7,4 @@ pandas
 numpy
 dash_bootstrap_components
 snowflake-connector-python
+
