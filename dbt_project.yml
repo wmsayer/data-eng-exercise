@@ -34,6 +34,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   data_eng_exercise:
     materialized: table
-    # Applies to all files under models/example/
-    example:
+    # Applies to all files under models/flipside/
+    flipside:
       materialized: view
+
