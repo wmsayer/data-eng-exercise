@@ -12,7 +12,7 @@ def model(dbt, session):
     
     keep_cols = ["ID", "_ETL_TIMESTAMP", "MARKET_CAP_RANK", "SCORE"]
     wkg_df = raw_trending_df[keep_cols].to_pandas().sort_values(by=["ID", "_ETL_TIMESTAMP"], ascending=True)
-    wkg_df['TIME'] = pd.to_datetime(wkg_df['_ETL_TIMESTAMP'])
+    wkg_df['TIME'] = pd.to_datetime(wkg_df['_ETL_TIMESTAMP'], utc=True)
     wkg_df['TIME_ts'] = pd.to_datetime(wkg_df['_ETL_TIMESTAMP']).astype(int)/ 10**9
     wkg_df['DATE'] = wkg_df['TIME'].dt.date
     wkg_df['HOUR'] = wkg_df['TIME'].dt.hour
