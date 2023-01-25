@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: historical_trending
+    config:
+      materialized: table
+
+sources:
+  - name: coingecko
+    tables:
+      - name: trending
