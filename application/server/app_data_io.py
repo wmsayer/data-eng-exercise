@@ -13,7 +13,7 @@ def get_btc_price_data(snwflk_api):
     ORDER BY TIME
     """
     result_df = snwflk_api.run_get_query(query)
-    result_df['TIME'] = pd.to_datetime(result_df['TIME'])
+    result_df['TIME'] = pd.to_datetime(result_df['TIME'], utc=True)
     return result_df
 
 
@@ -25,7 +25,7 @@ def get_spot_prices(snwflk_api):
         WHERE _ETL_TIMESTAMP = (SELECT MAX(_ETL_TIMESTAMP) FROM {table_str})
         """
     result_df = snwflk_api.run_get_query(query)
-    result_df['TIME'] = pd.to_datetime(result_df['TIME'])
+    result_df['TIME'] = pd.to_datetime(result_df['TIME'], utc=True)
     return result_df
 
 
@@ -42,7 +42,7 @@ def get_trending_data(snwflk_api):
         ORDER BY NAME, DATE, HOUR
     """
     result_df = snwflk_api.run_get_query(query)
-    result_df['TIME'] = pd.to_datetime(result_df['TIME'])
+    result_df['TIME'] = pd.to_datetime(result_df['TIME'], utc=True)
     result_df.columns = [c.replace("_", " ").title() for c in list(result_df.columns)]
     return result_df
 

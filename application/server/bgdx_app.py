@@ -39,7 +39,7 @@ def graph_update(dropdown_value):
     fig = px.line(df, x="Time", y='{}'.format(dropdown_value), color="Asset", log_y=True)
 
     update_ts = df["Time"].max().strftime("%m/%d/%Y, %H:%M:%S")
-    fig.update_layout(title=f'<b>Cryptoasset {dropdown_value}s</b> <i>(updated {update_ts})</i>',
+    fig.update_layout(title=f'<b>Cryptoasset {dropdown_value}s</b> <i>(updated {update_ts}, source: CoinGecko)</i>',
                       paper_bgcolor=GRAPH_PPR_COLOR,
                       xaxis_title='<b>Date</b>',
                       yaxis_title=f'<b>{dropdown_value}</b>',
@@ -58,7 +58,7 @@ def graph_trending_update(n):
 
     # update_ts = dt.datetime.now(pytz.utc).strftime("%m/%d/%Y, %H:%M:%S")
     update_ts = df["Time"].max().strftime("%m/%d/%Y, %H:%M:%S")
-    fig.update_layout(title=f'<b>Trending Coins on CoinGecko Search Engine</b> <i>(updated {update_ts})</i>',
+    fig.update_layout(title=f'<b>Trending Coins on CoinGecko Search Engine</b> <i>(updated {update_ts}, source: CoinGecko)</i>',
                       paper_bgcolor=GRAPH_PPR_COLOR,
                       xaxis_title='<b>Date</b>',
                       yaxis_title='<b>Trending Score</b>',

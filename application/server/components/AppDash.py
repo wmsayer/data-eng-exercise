@@ -10,7 +10,7 @@ def build_app_dash(refresh_rate, bkgrnd_img):
                                        },
                                 children=[
                                     # html.Div(id='live-price-feed'),
-                                    html.H1(id='H1', children='Bitcoin Price data',
+                                    html.H1(id='H1', children='Crypto Data Dashboard',
                                             style={'textAlign': 'center', 'marginTop': 0, 'marginBottom': 40}),
 
                                     html.Center(dcc.Dropdown(id='dropdown',
