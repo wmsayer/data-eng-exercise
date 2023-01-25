@@ -1,13 +1,12 @@
 from application.server.scripts.Admin import run_rest_get
 import application.server.scripts.SnowflakeAPI as snwflk
 import pandas as pd
-import time
-import numpy as np
 from sys import platform
 from dotenv import load_dotenv
 import os
 import pathlib
 import math
+
 
 PROJECT_ROOT = "%s" % pathlib.Path(__file__).parent.parent.parent.parent.absolute()
 
@@ -15,18 +14,19 @@ if platform == "linux":
     load_dotenv('/home/ubuntu/.bashrc')
 
 API_KEY = os.environ.get('CRYPTOWATCH_API')
+SNWFLK_DB = os.environ.get('SNOWFLAKE_DB')
 
 
 class CryptowatchAPI:
     def __init__(self, assets):
         self.api_root = 'https://api.cryptowat.ch'
-        self.snwflk_db = "FLIPSIDE"
+        self.snwflk_db = SNWFLK_DB
         self.assets = assets
         self.rate_limit_24hr = 10
-        self.rate_limit_tol = 0.95
+        self.rate_limit_tol = 0.9
+        self.print_allow = True
         self.log_book = {
-            "spot_prices": {"fn": self.get_current_prices, "api_credits": 0.005, "min_freq": 5},
-            # "next_prices": {"fn": self.get_current_prices, "api_credits": 0.005, "min_freq": 600}
+            "cryptowatch-spot_prices": {"fn": self.get_current_prices, "api_credits": 0.005, "min_freq": 5}
         }
 
         self.calc_log_freq()
@@ -50,16 +50,18 @@ class CryptowatchAPI:
 
         assert(check_sum <= target_tol)
 
-    def get_current_prices(self, base_asst="usdt", exchange="binance", write_snwflk=True, pull_new=True):
-        header = {"X-CW-API-Key": API_KEY}
-        url = "/".join([self.api_root, f"markets/prices"])
+    def get_current_prices(self, base_asst="usdt", exchange="binance", write_snwflk=True, pull_new=True, print_summ=False):
+        # header = {"X-CW-API-Key": API_KEY}
+        header = {"X-CW-Integration": API_KEY}
+        url = "/".join([self.api_root, "markets/prices"])
 
-        cache_path = "C:/Users/wsaye/PycharmProjects/data-eng-exercise/data/cw_market_prices.csv"
-
+        cache_path = "/".join([PROJECT_ROOT, "data/cw_market_prices.csv"])
         if pull_new:
-            result_dict, status_code = run_rest_get(url, headers=header, print_summ=False)
+            result_dict, status_code = run_rest_get(url, headers=header, print_summ=print_summ)
             result_df = pd.DataFrame(result_dict).reset_index(drop=False)
             result_df.to_csv(cache_path, index=False)
+            if self.print_allow:
+                print(f"\tAllowance: {result_dict['allowance']}")
         else:
             result_df = pd.read_csv(cache_path)
 
@@ -91,6 +93,9 @@ class CryptowatchAPI:
 if __name__ == "__main__":
     test_assets = ["btc", "eth", "ada", "matic", "sol"]
     test_api = CryptowatchAPI(assets=test_assets)
-    test_df = test_api.get_current_prices(write_snwflk=True, pull_new=True)
+    test_df = test_api.get_current_prices(write_snwflk=True, pull_new=True, print_summ=True)
     print(test_df.columns)
     print(test_df)
+
+
+
