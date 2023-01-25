@@ -123,7 +123,7 @@ class CoinGeckoAPI:
             count += 1
 
         df = pd.concat(df_list)
-        df['time'] = pd.to_datetime(df['time'], unit='ms')
+        df['time'] = pd.to_datetime(df['time'], unit='ms', utc=True)
         df['time'] = df['time'] - np.timedelta64(1, 's')  # this is to make sure prices represent close not open
         df['time'] = df['time'].dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
