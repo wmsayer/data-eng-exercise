@@ -14,13 +14,14 @@ def build_app_dash(refresh_rate, bkgrnd_img):
                                             style={'textAlign': 'center', 'marginTop': 0, 'marginBottom': 40}),
 
                                     html.Center(dcc.Dropdown(id='dropdown',
-                                                 options=[
+                                                options=[
                                                    {'label': 'Price', 'value': 'PRICES'},
                                                    {'label': 'Market Cap', 'value': 'MARKET_CAPS'},
                                                    {'label': 'Volume', 'value': 'TOTAL_VOLUMES'},
-                                                 ],
+                                                ],
                                          value='PRICES', style={'width': '50%'})),
-                                    html.Center(dcc.Graph(id='bar_plot', style={'width': '50%'}))
+                                    html.Center(dcc.Graph(id='bar_plot', style={'width': '50%'})),
+                                    html.Center(dcc.Graph(id='cg_trending_plot', style={'width': '50%'}))
     ])
 
     return dashboard_layout
