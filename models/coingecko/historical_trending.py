@@ -14,6 +14,8 @@ def model(dbt, session):
     wkg_df = raw_trending_df[keep_cols].to_pandas().sort_values(by=["ID", "_ETL_TIMESTAMP"], ascending=True)
     wkg_df['TIME'] = pd.to_datetime(wkg_df['_ETL_TIMESTAMP'])
     wkg_df['TIME_ts'] = pd.to_datetime(wkg_df['_ETL_TIMESTAMP']).astype(int)/ 10**9
+    wkg_df['DATE'] = wkg_df['TIME'].dt.date
+    wkg_df['HOUR'] = wkg_df['TIME'].dt.hour
 
     # calc delta_ts grouped by ID
     wkg_df["delta_ts"] = wkg_df.groupby(['ID'])['TIME_ts'].rolling(window=2).apply(lambda x: x.iloc[1] - x.iloc[0]).values
@@ -28,7 +30,7 @@ def model(dbt, session):
     wkg_df["TRENDING_SCORE"] = 100 * wkg_df["TRENDING_SCORE"] / wkg_df["TRENDING_SCORE"].max()
     
     # finalize output
-    final_cols = ["ID", "TIME", "MARKET_CAP_RANK", "TRENDING_SCORE"]
+    final_cols = ["ID", "TIME", "DATE", "HOUR", "MARKET_CAP_RANK", "TRENDING_SCORE"]
     wkg_df = wkg_df[final_cols]
     wkg_df = wkg_df.join(asset_map_df, how="left", on="ID")
     final_df = session.create_dataframe(wkg_df).toDF(list(wkg_df.columns))
