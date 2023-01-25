@@ -14,8 +14,9 @@ from flask import Flask
 import datetime as dt
 import pytz
 
-
-SNWFLK_API = snwflk.SnowflakeAPI(schema="dbt_output", wh="APPLICATION")
+DEV_SCHEMA = "dbt_output"
+PROD_SCHEMA = "dbt_output_prod"
+SNWFLK_API = snwflk.SnowflakeAPI(schema=PROD_SCHEMA, wh="APPLICATION")
 APP_REFRESH_RATE = 10  # in seconds
 
 server = Flask(__name__)
@@ -29,14 +30,21 @@ GRAPH_PPR_COLOR = 'rgba(255,255,255,0.8)'
 @app.callback(Output(component_id='bar_plot', component_property='figure'),
               [Input(component_id='dropdown', component_property='value')])
 def graph_update(dropdown_value):
-    df = app_data.get_btc_price_data(SNWFLK_API)
-    fig = px.line(df, x="TIME", y='{}'.format(dropdown_value), color="ASSET", log_y=True
-                  # hover_data=['SYMBOL', 'MARKET_CAP_RANK']
-                  )
-    fig.update_layout(title='<b>BTC Price</b>',
+    rename_dict = {"ASSET": "Asset", "TIME": "Time", "PRICES": "Price",
+                   "MARKET_CAPS": "Market Cap", "TOTAL_VOLUMES": "Volume"}
+
+    df = app_data.get_btc_price_data(SNWFLK_API).rename(columns=rename_dict)
+    df["Asset"] = df["Asset"].str.upper()
+
+    fig = px.line(df, x="Time", y='{}'.format(dropdown_value), color="Asset", log_y=True)
+
+    update_ts = df["Time"].max().strftime("%m/%d/%Y, %H:%M:%S")
+    fig.update_layout(title=f'<b>Cryptoasset {dropdown_value}s</b> <i>(updated {update_ts})</i>',
                       paper_bgcolor=GRAPH_PPR_COLOR,
                       xaxis_title='<b>Date</b>',
-                      yaxis_title='<b>Price</b>'
+                      yaxis_title=f'<b>{dropdown_value}</b>',
+                      yaxis_tickprefix="$",
+                      yaxis_dtick=1
                       )
     return fig
 
@@ -45,14 +53,16 @@ def graph_update(dropdown_value):
               Input('interval-component', 'n_intervals'))
 def graph_trending_update(n):
     df = app_data.get_trending_data(SNWFLK_API)
-    fig = px.line(df, x="TIME", y="TRENDING_SCORE", color="NAME",
-                  hover_data=['SYMBOL', 'MARKET_CAP_RANK'])
+    fig = px.line(df, x="Time", y="Trending Score", color="Name",
+                  hover_data=['Symbol', 'Market Cap Rank'])
 
-    update_ts = dt.datetime.now(pytz.utc).strftime("%m/%d/%Y, %H:%M:%S")
-    fig.update_layout(title=f'<b>Trending Coins on CoinGecko</b> (updated {update_ts})',
+    # update_ts = dt.datetime.now(pytz.utc).strftime("%m/%d/%Y, %H:%M:%S")
+    update_ts = df["Time"].max().strftime("%m/%d/%Y, %H:%M:%S")
+    fig.update_layout(title=f'<b>Trending Coins on CoinGecko Search Engine</b> <i>(updated {update_ts})</i>',
                       paper_bgcolor=GRAPH_PPR_COLOR,
                       xaxis_title='<b>Date</b>',
-                      yaxis_title='<b>Trending Score</b>'
+                      yaxis_title='<b>Trending Score</b>',
+                      xaxis_tickformat="%H:%M\n%b %d"
                       )
     return fig
 
@@ -72,7 +82,8 @@ def update_spot_prices(n):
         span_str = f"{row['ASSET']}: {spot_val_str}"
         span_list.append(html.Span(span_str, style=base_style | {'fontWeight': 'bold', 'color': '#018708'}))
 
-    update_ts = dt.datetime.now(pytz.utc).strftime("%m/%d/%Y, %H:%M:%S")
+    # update_ts = dt.datetime.now(pytz.utc).strftime("%m/%d/%Y, %H:%M:%S")
+    update_ts = price_df["TIME"].max().strftime("%m/%d/%Y, %H:%M:%S")
     span_list.append(html.Span(f" (refresh approx. every minute, last updated {update_ts}, source: Cryptowatch)",
                                style=base_style | {'fontStyle': 'italic'}))
 
