@@ -15,11 +15,6 @@ if platform == "linux":
 API_KEY = os.environ.get('FLIPSIDE_API_KEY')
 SNWFLK_DB = os.environ.get('SNOWFLAKE_DB')
 
-# default params for low-level API
-TTL_MINUTES = 15
-PAGE_SIZE = 100000  # return up to 100,000 results per GET request on the query id
-PAGE_NUMBER = 1  # return results of page 1
-
 
 class Flipside:
     def __init__(self, snwflk_db=SNWFLK_DB):
@@ -34,7 +29,7 @@ class Flipside:
         self.snwflk_db = snwflk_db
 
         self.log_book = {
-            "addr_bals": {"fn": self.get_eth_addr_bals, "freq": 5*60}
+            "flipside-addr_bals": {"fn": self.get_eth_addr_bals, "freq": 5*60}
         }
 
     def run_query(self, query):
@@ -78,8 +73,8 @@ class Flipside:
         self.df.sort_values(by="SYMBOL", inplace=True)
 
         if write_snwflk:
-            snwflk_api = snwflk.SnowflakeAPI(schema='ACCOUNT_BALS', db=self.snwflk_db)
-            snwflk_api.write_df(self.df, table='CURR_ETH_BALS', replace=True)
+            snwflk_api = snwflk.SnowflakeAPI(schema='FLIPSIDE', db=self.snwflk_db)
+            snwflk_api.write_df(self.df, table='CURR_ACCOUNT_BALS', replace=True)
 
         return self.df
 
