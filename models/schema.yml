@@ -1,0 +1,39 @@
+version: 2
+
+models:
+    - name: curr_entity_bals
+      description: "A table storing total current on-chain balances aggregated on (entity, network, symbol)"
+      columns:
+          - name: entity
+            description: "Part of the primary key for this table"
+            tests:
+                - not_null
+          - name: network
+            description: "Part of the primary key for this table"
+            tests:
+                - not_null
+          - name: symbol
+            description: "Part of the primary key for this table"
+            tests:
+                - not_null
+    - name: curr_spot_prices
+      description: "A table storing the last asset market prices from Cryptowatch"
+      columns:
+          - name: asset
+            description: "The primary key for this table"
+            tests:
+                - unique
+                - not_null
+    - name: cg_trending_asset_map
+      description: "A table storing a unique set of assets from the CoinGecko Trending table."
+      columns:
+          - name: id
+            description: "The primary key for this table"
+            tests:
+                - unique
+                - not_null
+      tests:
+          - unique:
+              column_name: "(id || name || symbol)"
+
+    
