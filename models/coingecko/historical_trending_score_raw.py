@@ -4,11 +4,14 @@ from snowflake.snowpark.functions import sql_expr
 
 def model(dbt, session):
     # DataFrame representing an upstream model
-    asset_map_df = dbt.ref("cg_trending_asset_map").to_pandas().set_index(keys="ID")
-
+    # asset_map_df = dbt.ref("cg_trending_asset_map").to_pandas().set_index(keys="ID")
+    
     # DataFrame representing an upstream source
     # upstream_source_df = dbt.source("upstream_source_name", "table_name")
     raw_trending_df = dbt.source("coingecko", "trending")
+    # asset_map_df = dbt.source("coingecko", "trending_assets")
+
+    # asset_map_df = asset_map_df[["ID", "NAME", "SYMBOL"]]
     
     keep_cols = ["ID", "_ETL_TIMESTAMP", "MARKET_CAP_RANK", "SCORE"]
     wkg_df = raw_trending_df[keep_cols].to_pandas().sort_values(by=["ID", "_ETL_TIMESTAMP"], ascending=True)
@@ -31,8 +34,8 @@ def model(dbt, session):
     
     # finalize output
     final_cols = ["ID", "TIME", "DATE", "HOUR", "MARKET_CAP_RANK", "TRENDING_SCORE"]
-    wkg_df = wkg_df[final_cols]
-    wkg_df = wkg_df.join(asset_map_df, how="left", on="ID")
+    wkg_df = wkg_df[final_cols].rename(columns={"ID": "CG_ID"})
+    # wkg_df = wkg_df.join(asset_map_df, how="left", on="ID")
     final_df = session.create_dataframe(wkg_df).toDF(list(wkg_df.columns))
     final_df = final_df.withColumn("TIME", sql_expr("to_timestamp(TIME::string)"))
 

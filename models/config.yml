@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: historical_trending
+  - name: historical_trending_score_raw
     config:
       materialized: table
 
@@ -9,3 +9,5 @@ sources:
   - name: coingecko
     tables:
       - name: trending
+    # views:
+    #   - name: trending_assets
