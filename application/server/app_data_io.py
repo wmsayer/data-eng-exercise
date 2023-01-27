@@ -30,17 +30,28 @@ def get_spot_prices(snwflk_api):
 
 
 def get_trending_data(snwflk_api):
+    # query = """
+    #     SELECT
+    #         NAME,
+    #         SYMBOL,
+    #         MAX(TIME) AS TIME,
+    #         AVG(MARKET_CAP_RANK) AS MARKET_CAP_RANK,
+    #         AVG(TRENDING_SCORE) AS TRENDING_SCORE
+    #     FROM BIGDORKSONLY.dbt_output_prod.historical_trending
+    #     GROUP BY NAME, SYMBOL, DATE, HOUR
+    #     ORDER BY NAME, DATE, HOUR
+    # """
     query = """
-        SELECT 
-            NAME,
-            SYMBOL,
-            MAX(TIME) AS TIME, 
-            AVG(MARKET_CAP_RANK) AS MARKET_CAP_RANK,
-            AVG(TRENDING_SCORE) AS TRENDING_SCORE
-        FROM BIGDORKSONLY.dbt_output_prod.historical_trending
-        GROUP BY NAME, SYMBOL, DATE, HOUR
-        ORDER BY NAME, DATE, HOUR
-    """
+            SELECT 
+                NAME,
+                SYMBOL,
+                TIME, 
+                MARKET_CAP_RANK,
+                TRENDING_SCORE
+            FROM BIGDORKSONLY.dbt_output_prod.historical_trending
+            ORDER BY NAME, TIME
+        """
+
     result_df = snwflk_api.run_get_query(query)
     result_df['TIME'] = pd.to_datetime(result_df['TIME'], utc=True)
     result_df.columns = [c.replace("_", " ").title() for c in list(result_df.columns)]
