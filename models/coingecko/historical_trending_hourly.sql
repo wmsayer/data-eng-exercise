@@ -19,7 +19,7 @@ scores AS (
         date,
         hour,
         AVG(market_cap_rank) AS market_cap_rank,
-        AVG(trending_score) AS trending_score
+        SUM(trending_score) AS trending_score
     FROM {{ref('historical_trending_score_raw')}}
     GROUP BY 1,2,3
 )

@@ -21,7 +21,10 @@ def model(dbt, session):
     wkg_df['HOUR'] = wkg_df['TIME'].dt.hour
 
     # calc delta_ts grouped by ID
-    wkg_df["delta_ts"] = wkg_df.groupby(['ID'])['TIME_ts'].rolling(window=2).apply(lambda x: x.iloc[1] - x.iloc[0]).values
+    # wkg_df["delta_ts"] = wkg_df.groupby(['ID'])['TIME_ts'].rolling(window=2).apply(lambda x: x.iloc[1] - x.iloc[0]).values
+
+    # assume delta_ts == 5 minutes
+    wkg_df["delta_ts"] = 5*60
 
     # calc new score via (16 - SCORE) / 4
     wkg_df["TRENDING_SCORE"] = wkg_df["delta_ts"] * (16 - wkg_df["SCORE"]) / 4
