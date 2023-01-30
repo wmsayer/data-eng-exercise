@@ -51,7 +51,6 @@ class CryptowatchAPI:
         assert(check_sum <= target_tol)
 
     def get_current_prices(self, base_asst="usdt", exchange="binance", write_snwflk=True, pull_new=True, print_summ=False):
-        # header = {"X-CW-API-Key": API_KEY}
         header = {"X-CW-Integration": API_KEY}
         url = "/".join([self.api_root, "markets/prices"])
 

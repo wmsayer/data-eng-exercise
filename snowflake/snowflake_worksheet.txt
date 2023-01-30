@@ -1,12 +1,15 @@
--- create warehouse transforming;
+create warehouse transforming;
+create warehouse application;
+create warehouse logging;
 
 create database bigdorksonly;
--- drop database flipside;
+-- drop database snowflake_sample_data;
+-- drop schema bigdorksonly.dbt_output
 
 create schema bigdorksonly.flipside;
 create table bigdorksonly.flipside.curr_account_bals
 (last_activity_block integer,
- last_activity_block_timestamp datetime,
+ last_activity_block_timestamp timestamp_ntz,
  user_address varchar,
  contract_address varchar,
  current_bal_unadj varchar,
@@ -19,8 +22,8 @@ create table bigdorksonly.flipside.curr_account_bals
  decimals integer,
  has_decimal boolean,
  has_price boolean,
- last_recorded_price datetime,
- _etl_timestamp datetime default current_timestamp
+ last_recorded_price timestamp_ntz,
+ _etl_timestamp timestamp_ntz default sysdate()
 );
 
 create schema bigdorksonly.coingecko;
@@ -29,24 +32,33 @@ create table bigdorksonly.coingecko.spot_prices
  usd double,
  usd_market_cap double,
  usd_24h_vol double,
- _etl_timestamp datetime default current_timestamp
+ _etl_timestamp timestamp_ntz default sysdate()
 );
-create table bigdorksonly.coingecko.trending
+create table bigdorksonly.coingecko.trending_log
 (id varchar,
  name varchar,
  symbol varchar,
  market_cap_rank int,
  score int,
- _etl_timestamp datetime default current_timestamp
+ _etl_timestamp timestamp_ntz default sysdate()
 );
-create table bigdorksonly.coingecko.historical_prices
-(time datetime,
+create table bigdorksonly.coingecko.historical_prices_hourly
+(time timestamp_ntz,
+ date date,
+ hour int,
  prices double,
  market_caps double,
  total_volumes double,
- asset varchar,
- _etl_timestamp datetime default current_timestamp
+ cg_id varchar,
+ symbol varchar,
+ _etl_timestamp timestamp_ntz default sysdate()
 );
+create view bigdorksonly.coingecko.trending_assets AS
+SELECT ID AS CG_ID, NAME, SYMBOL, MIN(_ETL_TIMESTAMP) AS MIN_TIME, MAX(_ETL_TIMESTAMP) AS MAX_TIME
+FROM bigdorksonly.coingecko.trending_log
+GROUP BY 1, 2, 3;
+
+-- drop table bigdorksonly.coingecko.historical_prices_hourly;
 
 create schema bigdorksonly.cryptowatch;
 create table bigdorksonly.cryptowatch.spot_prices
@@ -54,5 +66,5 @@ create table bigdorksonly.cryptowatch.spot_prices
  asset varchar,
  base varchar,
  price double,
- _etl_timestamp datetime default current_timestamp
+ _etl_timestamp timestamp_ntz default sysdate()
 );
