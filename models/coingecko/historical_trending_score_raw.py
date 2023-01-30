@@ -8,7 +8,7 @@ def model(dbt, session):
     
     # DataFrame representing an upstream source
     # upstream_source_df = dbt.source("upstream_source_name", "table_name")
-    raw_trending_df = dbt.source("coingecko", "trending")
+    raw_trending_df = dbt.source("coingecko", "trending_log")
     # asset_map_df = dbt.source("coingecko", "trending_assets")
 
     # asset_map_df = asset_map_df[["ID", "NAME", "SYMBOL"]]

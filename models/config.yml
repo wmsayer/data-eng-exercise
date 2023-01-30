@@ -8,6 +8,6 @@ models:
 sources:
   - name: coingecko
     tables:
-      - name: trending
+      - name: trending_log
     # views:
     #   - name: trending_assets
