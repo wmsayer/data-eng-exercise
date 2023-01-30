@@ -20,28 +20,42 @@ SNWFLK_DB = os.environ.get('SNOWFLAKE_DB')
 
 
 class CoinGeckoAPI:
-    def __init__(self, assets=[]):
+    def __init__(self, assets=[], dbt_env="dbt_output_dev"):
         self.api_root = 'https://api.coingecko.com/api/v3'
         self.data_key = "coins"
         self.print_summ = False
         self.snwflk_db = SNWFLK_DB
+        self.dbt_env = dbt_env
 
-        self.api_mapper = self.get_api_map()
+        self.cg_api_mapper = self.get_api_map_snwflk()
 
         self.assets = assets
 
         self.log_book = {
-            "coingecko-trending": {"fn": self.get_trending, "freq": 60*5},
-            "coingecko-spot_prices": {"fn": self.get_spot_prices, "freq": 30},
-            "coingecko-historical_prices": {"fn": self.get_asset_mkt_chart, "freq": 3600*2},
+            "coingecko-trending": {"fn": self.log_trending_src, "freq": 60 * 5},
+            "coingecko-trending-prices": {"fn": self.log_trending_prices, "freq": 60 * 5},
+            # "coingecko-spot_prices": {"fn": self.get_spot_prices, "freq": 30},
+            # "coingecko-historical_prices": {"fn": self.get_asset_mkt_chart, "freq": 3600*2},
         }
 
-    def get_api_map(self):
-        mapper_path = "/".join([PROJECT_ROOT, "seeds/project_api_map.csv"])
-        api_mapper = pd.read_csv(mapper_path).set_index(keys="asset")
+    def get_api_map_snwflk(self):
+        snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
+        query = f"SELECT * FROM BIGDORKSONLY.{self.dbt_env}.PROJECT_API_MAP"
+        api_mapper = snwflk_api.run_get_query(query).set_index(keys="SYMBOL")
         return api_mapper
 
-    def get_trending(self, write_snwflk=True):
+    def get_api_map_local(self):
+        mapper_path = "/".join([PROJECT_ROOT, "seeds/project_api_map.csv"])
+        api_mapper = pd.read_csv(mapper_path).set_index(keys="SYMBOL")
+        return api_mapper
+
+    def get_api_map_trending(self):
+        snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
+        query = "SELECT * FROM BIGDORKSONLY.COINGECKO.TRENDING_ASSETS"
+        assets_df = snwflk_api.run_get_query(query).set_index(keys="SYMBOL")
+        return assets_df
+
+    def log_trending_src(self, write_snwflk=True):
         url = "/".join([self.api_root, "search/trending"])
         result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
         result_df = pd.json_normalize(result_dict[self.data_key], record_prefix="")
@@ -51,13 +65,13 @@ class CoinGeckoAPI:
 
         if write_snwflk:
             snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
-            snwflk_api.write_df(result_df, table='TRENDING', replace=False)
+            snwflk_api.write_df(result_df, table='TRENDING_LOG', replace=False)
 
         return result_df
 
     def get_spot_prices(self, write_snwflk=True):
 
-        asset_ids = list(self.api_mapper.loc[self.assets, "cg_id"].values)
+        asset_ids = list(self.cg_api_mapper.loc[self.assets, "cg_id"].values)
 
         url = "/".join([self.api_root, "simple/price"])
         params = {
@@ -84,10 +98,15 @@ class CoinGeckoAPI:
 
         return result_df
 
-    def get_asset_mkt_chart(self, days=30, base="usd", print_summ=False, write_snwflk=True):
+    def log_trending_prices(self):
+        # latest_trending_df = self.log_trending_src(write_snwflk=True)
+        asset_id_map_df = self.get_api_map_trending()
+        asset_tkrs = list(asset_id_map_df.index)
+        self.get_asset_mkt_chart(assets=asset_tkrs, cg_id_mapper=asset_id_map_df, interval="hourly", write_snwflk=True)
+
+    def get_asset_mkt_chart(self, assets=[], cg_id_mapper=pd.DataFrame(), days=30, base="usd",
+                            interval="daily", write_snwflk=True):
         df_list = []
-        asset_ids = [{"a"}]
-            # (self.api_mapper.loc[self.assets, "cg_id"].values)
 
         # If you're pulling data from  this API and the script fails due to a 429 Error it is you are making too many
         # requests to that API. Therefore, I implement a time.sleep(X) timer to pause for X seconds every Y calls.
@@ -96,16 +115,17 @@ class CoinGeckoAPI:
         pause_X_sec = 10
         every_Y_calls = 10
 
-        for a in self.assets:
+        for a in assets:
 
             if (count % every_Y_calls) == 0:
                 print("From CoinGeckoAPI.py >>> get_asset_mkt_chart(): Pausing %d sec for API..." % pause_X_sec)
                 time.sleep(pause_X_sec)
 
-            url = "/".join([self.api_root, "coins", self.api_mapper.loc[a, "cg_id"], "market_chart"])
-            params = {'vs_currency': base, 'days': days, "interval": "daily"}
+            a_id = cg_id_mapper.loc[a, "CG_ID"]
+            url = "/".join([self.api_root, "coins", a_id, "market_chart"])
+            params = {'vs_currency': base, 'days': days, "interval": interval}
 
-            result_dict, status_code = run_rest_get(url, params=params, print_summ=print_summ)
+            result_dict, status_code = run_rest_get(url, params=params, print_summ=False)
             result_df = pd.DataFrame()
 
             for k, v in result_dict.items():
@@ -116,7 +136,8 @@ class CoinGeckoAPI:
                 else:
                     result_df = temp_df
 
-            result_df["asset"] = a
+            result_df["cg_id"] = a_id
+            result_df["symbol"] = a
             result_df.sort_values("time", inplace=True)
             df_list.append(result_df)
 
@@ -124,12 +145,17 @@ class CoinGeckoAPI:
 
         df = pd.concat(df_list)
         df['time'] = pd.to_datetime(df['time'], unit='ms', utc=True)
-        df['time'] = df['time'] - np.timedelta64(1, 's')  # this is to make sure prices represent close not open
+
+        if interval == "daily":
+            df['time'] = df['time'] - np.timedelta64(1, 's')  # this is to make sure prices represent close not open
+
+        df["date"] = df['time'].dt.strftime('%Y-%m-%d')
+        df["hour"] = df['time'].dt.hour
         df['time'] = df['time'].dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
         if write_snwflk:
             snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
-            snwflk_api.write_df(df, table='HISTORICAL_PRICES', replace=True)
+            snwflk_api.write_df(df, table=f'HISTORICAL_PRICES_{interval.upper()}', replace=True)
 
         return df
 

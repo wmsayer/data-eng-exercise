@@ -4,11 +4,11 @@ import scripts.CryptowatchAPI as cw
 import time
 
 
-class DataLogger():
-    def __init__(self, assets):
+class DataLogger:
+    def __init__(self, dbt_env="dbt_output_dev", assets=[]):
         self.assets = assets
         self.apis = [
-            cg.CoinGeckoAPI(assets=self.assets),
+            cg.CoinGeckoAPI(dbt_env=dbt_env, assets=self.assets),
             cw.CryptowatchAPI(assets=self.assets),
             # flip.Flipside()
         ]

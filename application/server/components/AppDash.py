@@ -1,4 +1,5 @@
 from dash import html, dcc
+import dash_bootstrap_components as dbc
 
 
 def build_app_dash(refresh_rate, bkgrnd_img):
@@ -18,10 +19,26 @@ def build_app_dash(refresh_rate, bkgrnd_img):
                                                    {'label': 'Price', 'value': 'Price'},
                                                    {'label': 'Market Cap', 'value': 'Market Cap'},
                                                    {'label': 'Volume', 'value': 'Volume'},
+                                                   {'label': 'Market Cap Rank', 'value': 'Market Cap Rank'},
+                                                   {'label': 'Trending Score', 'value': 'Trending Score'},
+                                                   {'label': 'Circulating Supply', 'value': 'Circulating Supply'},
                                                 ],
-                                                value='Price', style={'width': '50%'})),
+                                                value='Trending Score', style={'width': '50%'})),
                                     html.Center(dcc.Graph(id='bar_plot', style={'width': '50%'})),
-                                    html.Center(dcc.Graph(id='cg_trending_plot', style={'width': '50%'}))
+                                    # html.Center(dcc.Graph(id='cg_trending_plot', style={'width': '50%'})),
+                                    html.Center(html.Div(dbc.Row([
+                                        dbc.Col(dcc.Dropdown(id='dropdown-assets',
+                                                             options=[{'label': 'Choose Asset', 'value': 'None'}],
+                                                             value='None')),
+                                        dbc.Col(dcc.Dropdown(id='metric-lead',
+                                                             options=[{'label': '1hr', 'value': 1},
+                                                                      {'label': '3hr', 'value': 3},
+                                                                      {'label': '6hr', 'value': 6},
+                                                                      {'label': '12hr', 'value': 12}],
+                                                             value=1))
+                                        ]), style={'width': '50%'})),
+                                    html.Center(dcc.Graph(id='cg_trending_grid', style={'width': '50%'}))
+
     ])
 
     return dashboard_layout
