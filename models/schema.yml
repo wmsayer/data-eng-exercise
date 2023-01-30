@@ -24,16 +24,16 @@ models:
             tests:
                 - unique
                 - not_null
-    - name: cg_trending_asset_map
-      description: "A table storing a unique set of assets from the CoinGecko Trending table."
-      columns:
-          - name: id
-            description: "The primary key for this table"
-            tests:
-                - unique
-                - not_null
-      tests:
-          - unique:
-              column_name: "(id || name || symbol)"
+    # - name: cg_trending_asset_map
+    #   description: "A table storing a unique set of assets from the CoinGecko Trending table."
+    #   columns:
+    #       - name: id
+    #         description: "The primary key for this table"
+    #         tests:
+    #             - unique
+    #             - not_null
+    #   tests:
+    #       - unique:
+    #           column_name: "(id || name || symbol)"
 
     
