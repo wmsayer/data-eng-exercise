@@ -24,16 +24,93 @@ models:
             tests:
                 - unique
                 - not_null
-    # - name: cg_trending_asset_map
-    #   description: "A table storing a unique set of assets from the CoinGecko Trending table."
-    #   columns:
-    #       - name: id
-    #         description: "The primary key for this table"
-    #         tests:
-    #             - unique
-    #             - not_null
-    #   tests:
-    #       - unique:
-    #           column_name: "(id || name || symbol)"
+    - name: historical_trending_hourly
+      description: "A table storing the final set of trending scores joined with price & market data."
+      columns:
+          - name: cg_id
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: date
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: hour
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: time
+            description: "A primary key for this table"
+            tests:
+                - not_null
+      tests:
+          - unique:
+              column_name: "(cg_id || date || hour)"
+    - name: curr_trending_summary
+      description: "A table storing the latest set of stats for trending assets."
+      columns:
+          - name: cg_id
+            description: "A primary key for this table"
+            tests:
+                - unique
+                - not_null
+          - name: symbol
+            description: "A primary key for this table"
+            tests:
+                - unique
+                - not_null
+          - name: name
+            description: "A primary key for this table"
+            tests:
+                - unique
+                - not_null
+    - name: historical_trending_score_raw_enr
+      description: "A table storing the set of raw trending scores joined with logging metadata."
+      columns:
+          - name: cg_id
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: date
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: hour
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: time
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: trending_score
+            description: "A primary key for this table"
+            tests:
+                - not_null
+      tests:
+          - unique:
+              column_name: "(cg_id || time)"
+    - name: historical_trending_windows
+      description: "A table storing the final set of trending scores joined with price & market data with columns for moving window stats."
+      columns:
+          - name: cg_id
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: date
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: hour
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: time
+            description: "A primary key for this table"
+            tests:
+                - not_null
+      tests:
+          - unique:
+              column_name: "(cg_id || date || hour)"
 
     

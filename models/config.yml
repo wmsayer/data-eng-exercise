@@ -3,11 +3,9 @@ version: 2
 models:
   - name: historical_trending_score_raw
     config:
-      materialized: table
+        materialized: table
 
 sources:
   - name: coingecko
     tables:
       - name: trending_log
-    # views:
-    #   - name: trending_assets
