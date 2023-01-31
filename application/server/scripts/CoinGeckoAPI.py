@@ -17,6 +17,7 @@ if platform == "linux":
     load_dotenv('/home/ubuntu/.bashrc')
 
 SNWFLK_DB = os.environ.get('SNOWFLAKE_DB')
+REQUEST_ERROR_SLEEP = 61
 
 
 class CoinGeckoAPI:
@@ -55,13 +56,30 @@ class CoinGeckoAPI:
         assets_df = snwflk_api.run_get_query(query).set_index(keys="SYMBOL")
         return assets_df
 
-    def log_trending_src(self, write_snwflk=True):
+    def log_trending_src(self, store_local=True, write_snwflk=True):
         url = "/".join([self.api_root, "search/trending"])
         result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
+        while status_code != 200:
+            print(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
+            time.sleep(REQUEST_ERROR_SLEEP)  # sleep X seconds then try again
+            result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
+
         result_df = pd.json_normalize(result_dict[self.data_key], record_prefix="")
         result_df.columns = [c.split(".")[1] for c in result_df.columns]
         keep_cols = ["id", "name", "symbol", "market_cap_rank", "score"]
         result_df = result_df[keep_cols]
+        result_df.columns = [c.upper() for c in result_df.columns]
+
+        if store_local:
+            local_path = "/".join([PROJECT_ROOT, "data/cg_historical_prices_hourly.csv"])
+            if os.path.isfile(local_path):
+                print(f"\tExisting log found at: {local_path}")
+                existing_df = pd.read_csv(local_path)
+                write_df = pd.concat([existing_df, result_df])
+            else:
+                print(f"\tExisting log not found at: {local_path}")
+                write_df = result_df
+            write_df.to_csv(local_path, index=False)
 
         if write_snwflk:
             snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
@@ -112,8 +130,8 @@ class CoinGeckoAPI:
         # requests to that API. Therefore, I implement a time.sleep(X) timer to pause for X seconds every Y calls.
         # If you get a 429 Error, adjust these parameters as needed.
         count = 1
-        pause_X_sec = 10
-        every_Y_calls = 10
+        pause_X_sec = 30
+        every_Y_calls = 9
 
         for a in assets:
 
@@ -124,10 +142,13 @@ class CoinGeckoAPI:
             a_id = cg_id_mapper.loc[a, "CG_ID"]
             url = "/".join([self.api_root, "coins", a_id, "market_chart"])
             params = {'vs_currency': base, 'days': days, "interval": interval}
-
             result_dict, status_code = run_rest_get(url, params=params, print_summ=False)
-            result_df = pd.DataFrame()
+            while status_code != 200:
+                print(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
+                time.sleep(REQUEST_ERROR_SLEEP)  # sleep X seconds then try again
+                result_dict, status_code = run_rest_get(url, params=params, print_summ=False)
 
+            result_df = pd.DataFrame()
             for k, v in result_dict.items():
                 temp_df = pd.DataFrame(v, columns=["time", k])
 
@@ -150,14 +171,24 @@ class CoinGeckoAPI:
             df['time'] = df['time'] - np.timedelta64(1, 's')  # this is to make sure prices represent close not open
 
         df["date"] = df['time'].dt.strftime('%Y-%m-%d')
-        df["hour"] = df['time'].dt.hour
+        df["hour"] = pd.to_datetime(df['time'].dt.round("H"), utc=True).dt.hour
         df['time'] = df['time'].dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+        df.drop_duplicates(subset=["cg_id", "date", "hour"], inplace=True)
 
         if write_snwflk:
             snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
             snwflk_api.write_df(df, table=f'HISTORICAL_PRICES_{interval.upper()}', replace=True)
 
         return df
+
+
+def transform_trending_log():
+    local_path = "/".join([PROJECT_ROOT, "data/cg_historical_prices_hourly.csv"])
+    print(f"\tExisting log found at: {local_path}")
+    log_df = pd.read_csv(local_path)
+    log_df["TRENDING_SCORE"] = log_df["SCORE"]
+    log_df = log_df.pivot(index="TIME", columns="ID", values="SCORE")
+
 
 
 if __name__ == "__main__":
