@@ -12,7 +12,7 @@ def build_app_layout(refresh_rate):
                           children=[
                               build_app_navbar(LOGO_IMG),
                               html.Div(id='live-price-feed'),
-                              build_app_dash(refresh_rate, BKGRND_IMG),
+                              build_app_dash(BKGRND_IMG),
                               dcc.Interval(id='interval-component', interval=refresh_rate * 1000)  # in milliseconds
                           ])
 

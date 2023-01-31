@@ -50,7 +50,7 @@ def run_rest_get(url, params={}, headers={}, print_summ=True, print_resp=False):
     return json_dict, status_code
 
 
-def format_num_to_sig_figs(val, sig_figs=3, prefix="$"):
+def format_num_to_sig_figs(val, sig_figs=3, prefix="$", suffix=""):
     """Assumes single value, not array."""
     power = np.floor(np.log10(val))
 
@@ -63,7 +63,7 @@ def format_num_to_sig_figs(val, sig_figs=3, prefix="$"):
         unit_lab = ""
         new_val = val
 
-    new_val_str = prefix + ('{0:.%sg}' % sig_figs).format(new_val) + unit_lab
+    new_val_str = prefix + ('{0:.%sg}' % sig_figs).format(new_val) + unit_lab + suffix
     # print(f"OG val: {val} --- New val: {new_val_str}")
     return new_val_str
 

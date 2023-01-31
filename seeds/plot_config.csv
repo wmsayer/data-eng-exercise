@@ -1,0 +1,9 @@
+metric,prefix,suffix,log_y,reversed,time_based,inc_main_plot,inc_asset_grid,inc_table,format_type
+Trending Score,,,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,integer
+Price,$,,TRUE,FALSE,FALSE,TRUE,TRUE,TRUE,dollar
+Market Cap,$,,TRUE,FALSE,FALSE,TRUE,FALSE,TRUE,dollar_billions
+Volume,$,,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,dollar_billions
+Volume Pct Chg,,%,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,percent_w_sign
+Market Cap Rank,,,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,integer
+Circulating Supply,,,TRUE,FALSE,FALSE,TRUE,FALSE,FALSE,number_SI
+Price Pct Chg,,%,FALSE,FALSE,TRUE,FALSE,FALSE,TRUE,percent_w_sign
