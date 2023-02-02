@@ -17,7 +17,7 @@ if platform == "linux":
     load_dotenv('/home/ubuntu/.bashrc')
 
 SNWFLK_DB = os.environ.get('SNOWFLAKE_DB')
-REQUEST_ERROR_SLEEP = 61
+REQUEST_ERROR_SLEEP = 65
 
 
 class CoinGeckoAPI:
@@ -34,8 +34,8 @@ class CoinGeckoAPI:
 
         self.log_book = {
             "coingecko-trending": {"fn": self.log_trending_src, "freq": 60 * 5},
-            "coingecko-trending-prices": {"fn": self.log_trending_prices, "freq": 60 * 5},
-            # "coingecko-spot_prices": {"fn": self.get_spot_prices, "freq": 30},
+            "coingecko-trending-prices": {"fn": self.log_trending_prices, "freq": 60 * 20},
+            "coingecko-global": {"fn": self.get_global_mkt_cap, "freq": 60*5},
             # "coingecko-historical_prices": {"fn": self.get_asset_mkt_chart, "freq": 3600*2},
         }
 
@@ -130,7 +130,7 @@ class CoinGeckoAPI:
         # requests to that API. Therefore, I implement a time.sleep(X) timer to pause for X seconds every Y calls.
         # If you get a 429 Error, adjust these parameters as needed.
         count = 1
-        pause_X_sec = 30
+        pause_X_sec = 60
         every_Y_calls = 9
 
         for a in assets:
@@ -181,14 +181,40 @@ class CoinGeckoAPI:
 
         return df
 
+    def get_global_mkt_cap(self, write_snwflk=True, store_local=True):
+        url = "/".join([self.api_root, "global"])
+        result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
+        while status_code != 200:
+            print(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
+            time.sleep(REQUEST_ERROR_SLEEP)  # sleep X seconds then try again
+            result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
 
-def transform_trending_log():
-    local_path = "/".join([PROJECT_ROOT, "data/cg_historical_prices_hourly.csv"])
-    print(f"\tExisting log found at: {local_path}")
-    log_df = pd.read_csv(local_path)
-    log_df["TRENDING_SCORE"] = log_df["SCORE"]
-    log_df = log_df.pivot(index="TIME", columns="ID", values="SCORE")
+        result_dict = result_dict["data"]
+        result_dict["total_market_cap"] = result_dict["total_market_cap"]["usd"]
+        result_dict["total_volume"] = result_dict["total_volume"]["usd"]
+        result_dict.pop("market_cap_percentage")
+        result_df = pd.DataFrame([result_dict])
+        result_df.columns = [c.upper() for c in result_df.columns]
+        result_df["UPDATED_AT"] = pd.to_datetime(result_df["UPDATED_AT"], unit='s', utc=True)
 
+        result_df["DATE"] = result_df['UPDATED_AT'].dt.strftime('%Y-%m-%d')
+        result_df["HOUR"] = pd.to_datetime(result_df['UPDATED_AT'].dt.round("H"), utc=True).dt.hour
+        result_df['UPDATED_AT'] = result_df['UPDATED_AT'].dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        if store_local:
+            local_path = "/".join([PROJECT_ROOT, "data/cg_global_stats.csv"])
+            if os.path.isfile(local_path):
+                print(f"\tExisting log found at: {local_path}")
+                existing_df = pd.read_csv(local_path)
+                write_df = pd.concat([existing_df, result_df])
+            else:
+                print(f"\tExisting log not found at: {local_path}")
+                write_df = result_df
+            write_df.to_csv(local_path, index=False)
+
+        if write_snwflk:
+            snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
+            snwflk_api.write_df(result_df, table=f'GLOBAL_STATS', replace=False)
 
 
 if __name__ == "__main__":
@@ -196,10 +222,11 @@ if __name__ == "__main__":
     test_api = CoinGeckoAPI(test_assets)
     # test_api.log_cg_to_snwflk()
     # test_assets = [("bitcoin", "BTC")]
-    test_df = test_api.get_asset_mkt_chart(write_snwflk=False, print_summ=False)
-    test_df = test_df.sort_values(by=["asset", "time"], ascending=True)
-    test_df["delta"] = test_df.groupby(['asset'])['prices'].rolling(window=2).apply(lambda x: x.iloc[1] - x.iloc[0]).values
+    # test_df = test_api.get_asset_mkt_chart(write_snwflk=False, print_summ=False)
+    test_api.get_global_mkt_cap()
+    # test_df = test_df.sort_values(by=["asset", "time"], ascending=True)
+    # test_df["delta"] = test_df.groupby(['asset'])['prices'].rolling(window=2).apply(lambda x: x.iloc[1] - x.iloc[0]).values
     # print(vals)
     # test_df = test_api.get_spot_prices(write_snwflk=False)
-    print(test_df.columns)
-    print(test_df)
+    # print(test_df.columns)
+    # print(test_df)
