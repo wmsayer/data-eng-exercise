@@ -35,7 +35,7 @@ while APP_IO.trending_df.empty or APP_IO.curr_trend_summ_df.empty:
     print("sleepy")
     time.sleep(1)
 
-APP_REFRESH_RATE = 60*5  # in seconds
+APP_REFRESH_RATE = 60*7  # in seconds
 
 server = Flask(__name__)
 app = dash.Dash(name=__name__, server=server, external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -285,7 +285,7 @@ def update_spot_prices(n):
     update_ts = price_df["TIME"].max().strftime("%m/%d/%Y, %H:%M:%S")
     span_list.append(html.Span(f" (last updated {update_ts}, source: Cryptowatch)",
                                style=base_style | {'fontStyle': 'italic'}))
-
+    APP_IO.refresh_data()
     available_assets = APP_IO.get_available_asset_opts()
     def_val = available_assets[0]['value'] if available_assets else ""
 
