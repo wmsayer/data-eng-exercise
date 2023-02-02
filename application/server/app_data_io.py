@@ -13,6 +13,9 @@ class AppDataIO:
         self.trending_asset_ids = []
         self.assets_by_trending_24hr = []
 
+        self.refresh_data()
+
+    def refresh_data(self):
         self.get_trending_data()
         self.get_curr_trend_summ()
 
