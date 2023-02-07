@@ -7,6 +7,8 @@ import pathlib
 from sys import platform
 from dotenv import load_dotenv
 import os
+import datetime as dt
+import pytz
 
 PROJECT_ROOT = "%s" % pathlib.Path(__file__).parent.parent.parent.parent.absolute()
 
@@ -71,14 +73,17 @@ class CoinGeckoAPI:
         result_df.columns = [c.upper() for c in result_df.columns]
 
         if store_local:
-            local_path = "/".join([PROJECT_ROOT, "data/cg_historical_prices_hourly.csv"])
+            result_df_loc = result_df.copy()
+            result_df_loc["_etl_timestamp"] = dt.datetime.now(pytz.utc)
+            local_path = "/".join([PROJECT_ROOT, "data/cg_historical_trending_log.csv"])
             if os.path.isfile(local_path):
                 print(f"\tExisting log found at: {local_path}")
                 existing_df = pd.read_csv(local_path)
-                write_df = pd.concat([existing_df, result_df])
+                write_df = pd.concat([existing_df, result_df_loc])
             else:
                 print(f"\tExisting log not found at: {local_path}")
-                write_df = result_df
+                write_df = result_df_loc
+
             write_df.to_csv(local_path, index=False)
 
         if write_snwflk:
@@ -181,7 +186,7 @@ class CoinGeckoAPI:
 
         return df
 
-    def get_global_mkt_cap(self, write_snwflk=True, store_local=True):
+    def get_global_mkt_cap(self, write_snwflk=False, store_local=True):
         url = "/".join([self.api_root, "global"])
         result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
         while status_code != 200:
@@ -218,6 +223,7 @@ class CoinGeckoAPI:
 
 
 if __name__ == "__main__":
+
     test_assets = ["btc", "eth", "ada", "matic", "sol"]
     test_api = CoinGeckoAPI(test_assets)
     # test_api.log_cg_to_snwflk()
@@ -230,3 +236,18 @@ if __name__ == "__main__":
     # test_df = test_api.get_spot_prices(write_snwflk=False)
     # print(test_df.columns)
     # print(test_df)
+
+    # if store_local:
+    local_path = "/".join([PROJECT_ROOT, "data/cg_historical_trending_log.csv"])
+    # if os.path.isfile(local_path):
+    #     print(f"\tExisting log found at: {local_path}")
+    existing_df = pd.read_csv(local_path)
+        # write_df = pd.concat([existing_df, result_df])
+    # else:
+    #     print(f"\tExisting log not found at: {local_path}")
+    #     write_df = result_df
+    # write_df.to_csv(local_path, index=False)
+
+    # if write_snwflk:
+    snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db="BIGDORKSONLY")
+    snwflk_api.write_df(existing_df, table='TRENDING_LOG', replace=True)
