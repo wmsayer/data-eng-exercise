@@ -57,6 +57,19 @@ create view bigdorksonly.coingecko.trending_assets AS
 SELECT ID AS CG_ID, NAME, SYMBOL, MIN(_ETL_TIMESTAMP) AS MIN_TIME, MAX(_ETL_TIMESTAMP) AS MAX_TIME
 FROM bigdorksonly.coingecko.trending_log
 GROUP BY 1, 2, 3;
+create view bigdorksonly.coingecko.trending_log_runs AS
+WITH ind_logs AS (
+SELECT DISTINCT _ETL_TIMESTAMP AS log_time
+FROM bigdorksonly.coingecko.trending_log
+ORDER BY 1 ASC
+)
+SELECT
+    log_time,
+    LAG(log_time, 1) OVER (ORDER BY log_time ASC) AS last_log_taken,
+    DATE_PART(EPOCH, log_time) - DATE_PART(EPOCH, LAG(log_time, 1) OVER (ORDER BY log_time ASC)) AS log_lag_seconds
+FROM ind_logs
+ORDER BY 1 ASC;
+
 
 -- drop table bigdorksonly.coingecko.historical_prices_hourly;
 
