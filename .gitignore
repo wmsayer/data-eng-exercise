@@ -9,3 +9,6 @@ data/
 **/.streamlit/secrets.toml
 **/bgdx_app.sock
 **/Archive/
+analyses/
+macros/
+snapshots/
