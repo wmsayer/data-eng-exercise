@@ -2,7 +2,7 @@
 
 This repository for [Big Dorks Only](https://bigdorksonly.io/) - a side project I started in January 2023 to gain more experience with modern data stack tools. Big Dorks Only is a basic webapp built using Python, Flask, and Dash, served on an AWS EC2 instance built to provide crypto-related data with basic transformations using automated ETL processes via dbt Cloud.
 
-Data life cycle:
+#### Data Life Cycle:
 - Data is pulled from various public cryptocurrency APIs and stored into my Snowflake database
 - dbt is used to transform the data within Snowflake and load it into a new “output” schema
 - The webapp serves data directly from Snowflake
