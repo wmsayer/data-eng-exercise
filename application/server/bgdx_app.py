@@ -27,7 +27,7 @@ else:
     DBT_ENV = "dbt_output_dev"
 
 PROJECT_ROOT = "%s" % pathlib.Path(__file__).parent.parent.parent.absolute()
-SNWFLK_API = snwflk.SnowflakeAPI(schema=DBT_ENV, wh="APPLICATION")
+SNWFLK_API = snwflk.SnowflakeAPI(schema=DBT_ENV, wh="COMPUTE_WH")
 APP_IO = app_data.AppDataIO(SNWFLK_API, DBT_ENV)
 
 while APP_IO.trending_df.empty or APP_IO.curr_trend_summ_df.empty:

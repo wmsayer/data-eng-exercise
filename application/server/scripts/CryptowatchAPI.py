@@ -26,7 +26,7 @@ class CryptowatchAPI:
         self.rate_limit_tol = 0.9
         self.print_allow = True
         self.log_book = {
-            "cryptowatch-spot_prices": {"fn": self.get_current_prices, "api_credits": 0.005, "min_freq": 5*60}
+            "cryptowatch-spot_prices": {"fn": self.get_current_prices, "api_credits": 0.005, "min_freq": 3600*6}
         }
 
         self.calc_log_freq()

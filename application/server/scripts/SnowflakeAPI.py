@@ -21,7 +21,7 @@ SNOWFLAKE_USER = os.environ.get('SNOWFLAKE_USER')
 SNOWFLAKE_PWD = os.environ.get('SNOWFLAKE_PWD')
 SNOWFLAKE_ACCOUNT = os.environ.get('SNOWFLAKE_ACCOUNT')
 DEFAULT_DB = os.environ.get('SNOWFLAKE_DB')
-DEFAULT_WH = "LOGGING"
+DEFAULT_WH = "COMPUTE_WH"
 
 
 class SnowflakeAPI:
