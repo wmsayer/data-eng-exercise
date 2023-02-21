@@ -9,7 +9,7 @@ class DataLogger:
         self.assets = assets
         self.apis = [
             cg.CoinGeckoAPI(dbt_env=dbt_env, assets=self.assets),
-            cw.CryptowatchAPI(assets=self.assets),
+            # cw.CryptowatchAPI(assets=self.assets),
             # flip.Flipside()
         ]
         self.min_sleep = self.get_min_sleep()

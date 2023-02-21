@@ -3,10 +3,9 @@ create warehouse application;
 create warehouse logging;
 
 create database bigdorksonly;
--- drop database snowflake_sample_data;
--- drop schema bigdorksonly.dbt_output
 
 create schema bigdorksonly.flipside;
+
 create table bigdorksonly.flipside.curr_account_bals
 (last_activity_block integer,
  last_activity_block_timestamp timestamp_ntz,
@@ -26,7 +25,9 @@ create table bigdorksonly.flipside.curr_account_bals
  _etl_timestamp timestamp_ntz default sysdate()
 );
 
+
 create schema bigdorksonly.coingecko;
+
 create table bigdorksonly.coingecko.spot_prices
 (asset varchar,
  usd double,
@@ -34,6 +35,7 @@ create table bigdorksonly.coingecko.spot_prices
  usd_24h_vol double,
  _etl_timestamp timestamp_ntz default sysdate()
 );
+
 create table bigdorksonly.coingecko.trending_log
 (id varchar,
  name varchar,
@@ -42,6 +44,7 @@ create table bigdorksonly.coingecko.trending_log
  score int,
  _etl_timestamp timestamp_ntz default sysdate()
 );
+
 create table bigdorksonly.coingecko.historical_prices_hourly
 (time timestamp_ntz,
  date date,
@@ -53,14 +56,28 @@ create table bigdorksonly.coingecko.historical_prices_hourly
  symbol varchar,
  _etl_timestamp timestamp_ntz default sysdate()
 );
+
 create view bigdorksonly.coingecko.trending_assets AS
 SELECT ID AS CG_ID, NAME, SYMBOL, MIN(_ETL_TIMESTAMP) AS MIN_TIME, MAX(_ETL_TIMESTAMP) AS MAX_TIME
 FROM bigdorksonly.coingecko.trending_log
 GROUP BY 1, 2, 3;
 
--- drop table bigdorksonly.coingecko.historical_prices_hourly;
+create view bigdorksonly.coingecko.trending_log_runs AS
+WITH ind_logs AS (
+SELECT DISTINCT _ETL_TIMESTAMP AS log_time
+FROM bigdorksonly.coingecko.trending_log
+ORDER BY 1 ASC
+)
+SELECT
+    log_time,
+    LAG(log_time, 1) OVER (ORDER BY log_time ASC) AS last_log_taken,
+    DATE_PART(EPOCH, log_time) - DATE_PART(EPOCH, LAG(log_time, 1) OVER (ORDER BY log_time ASC)) AS log_lag_seconds
+FROM ind_logs
+ORDER BY 1 ASC;
+
 
 create schema bigdorksonly.cryptowatch;
+
 create table bigdorksonly.cryptowatch.spot_prices
 (exchange varchar,
  asset varchar,

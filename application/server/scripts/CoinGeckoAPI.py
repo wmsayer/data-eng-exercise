@@ -7,6 +7,8 @@ import pathlib
 from sys import platform
 from dotenv import load_dotenv
 import os
+import datetime as dt
+import pytz
 
 PROJECT_ROOT = "%s" % pathlib.Path(__file__).parent.parent.parent.parent.absolute()
 
@@ -33,9 +35,9 @@ class CoinGeckoAPI:
         self.assets = assets
 
         self.log_book = {
-            "coingecko-trending": {"fn": self.log_trending_src, "freq": 60 * 5},
-            "coingecko-trending-prices": {"fn": self.log_trending_prices, "freq": 60 * 20},
-            "coingecko-global": {"fn": self.get_global_mkt_cap, "freq": 60*5},
+            "coingecko-trending": {"fn": self.log_trending_src, "freq": 3600*6},
+            # "coingecko-trending-prices": {"fn": self.log_trending_prices, "freq": 3600*12},
+            "coingecko-global": {"fn": self.get_global_mkt_cap, "freq": 3600*6},
             # "coingecko-historical_prices": {"fn": self.get_asset_mkt_chart, "freq": 3600*2},
         }
 
@@ -71,14 +73,17 @@ class CoinGeckoAPI:
         result_df.columns = [c.upper() for c in result_df.columns]
 
         if store_local:
-            local_path = "/".join([PROJECT_ROOT, "data/cg_historical_prices_hourly.csv"])
+            result_df_loc = result_df.copy()
+            result_df_loc["_etl_timestamp"] = dt.datetime.now(pytz.utc)
+            local_path = "/".join([PROJECT_ROOT, "data/cg_historical_trending_log.csv"])
             if os.path.isfile(local_path):
                 print(f"\tExisting log found at: {local_path}")
                 existing_df = pd.read_csv(local_path)
-                write_df = pd.concat([existing_df, result_df])
+                write_df = pd.concat([existing_df, result_df_loc])
             else:
                 print(f"\tExisting log not found at: {local_path}")
-                write_df = result_df
+                write_df = result_df_loc
+
             write_df.to_csv(local_path, index=False)
 
         if write_snwflk:
@@ -136,7 +141,7 @@ class CoinGeckoAPI:
         for a in assets:
 
             if (count % every_Y_calls) == 0:
-                print("From CoinGeckoAPI.py >>> get_asset_mkt_chart(): Pausing %d sec for API..." % pause_X_sec)
+                print("\tFrom CoinGeckoAPI.py >>> get_asset_mkt_chart(): Pausing %d sec for API..." % pause_X_sec)
                 time.sleep(pause_X_sec)
 
             a_id = cg_id_mapper.loc[a, "CG_ID"]
@@ -181,7 +186,7 @@ class CoinGeckoAPI:
 
         return df
 
-    def get_global_mkt_cap(self, write_snwflk=True, store_local=True):
+    def get_global_mkt_cap(self, write_snwflk=False, store_local=True):
         url = "/".join([self.api_root, "global"])
         result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
         while status_code != 200:
@@ -216,17 +221,17 @@ class CoinGeckoAPI:
             snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
             snwflk_api.write_df(result_df, table=f'GLOBAL_STATS', replace=False)
 
+    def init_snwflk_trending(self):
+        local_path = "/".join([PROJECT_ROOT, "data/cg_historical_trending_log.csv"])
+        existing_df = pd.read_csv(local_path)
+        existing_df.columns = [c.upper() for c in existing_df.columns]
+
+        snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db="BIGDORKSONLY")
+        snwflk_api.write_df(existing_df, table='TRENDING_LOG', replace=True)
+
 
 if __name__ == "__main__":
     test_assets = ["btc", "eth", "ada", "matic", "sol"]
     test_api = CoinGeckoAPI(test_assets)
-    # test_api.log_cg_to_snwflk()
-    # test_assets = [("bitcoin", "BTC")]
-    # test_df = test_api.get_asset_mkt_chart(write_snwflk=False, print_summ=False)
-    test_api.get_global_mkt_cap()
-    # test_df = test_df.sort_values(by=["asset", "time"], ascending=True)
-    # test_df["delta"] = test_df.groupby(['asset'])['prices'].rolling(window=2).apply(lambda x: x.iloc[1] - x.iloc[0]).values
-    # print(vals)
-    # test_df = test_api.get_spot_prices(write_snwflk=False)
-    # print(test_df.columns)
-    # print(test_df)
+
+    test_api.init_snwflk_trending()
