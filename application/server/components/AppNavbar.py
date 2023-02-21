@@ -9,7 +9,8 @@ def build_app_navbar(logo_img):
                 html.A(
                     dbc.Row(
                         [dbc.Col(html.Img(src=logo_img, height="100px")),
-                        dbc.Col(dbc.NavbarBrand("Big Dorks Only", className="ms-2"))],
+                         dbc.Col(dbc.NavbarBrand("Big Dorks Only", className="ms-2"))
+                         ],
                         align="center",
                         className="g-0",
                     ),

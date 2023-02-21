@@ -1,6 +1,6 @@
-project,asset,cg_id
+name,symbol,CG_ID
 Bitcoin,btc,bitcoin
 Ethereum,eth,ethereum
 Cardano,ada,cardano
-Polygon,matic,polygon
+Polygon,matic,matic-network
 Solana,sol,solana

@@ -21,7 +21,7 @@ SNOWFLAKE_USER = os.environ.get('SNOWFLAKE_USER')
 SNOWFLAKE_PWD = os.environ.get('SNOWFLAKE_PWD')
 SNOWFLAKE_ACCOUNT = os.environ.get('SNOWFLAKE_ACCOUNT')
 DEFAULT_DB = os.environ.get('SNOWFLAKE_DB')
-DEFAULT_WH = "LOGGING"
+DEFAULT_WH = "COMPUTE_WH"
 
 
 class SnowflakeAPI:
@@ -78,11 +78,11 @@ class SnowflakeAPI:
 
 
 if __name__ == "__main__":
-    test_api = SnowflakeAPI(db="flipside", schema="dbt_wsayer2")
+    test_api = SnowflakeAPI(db="bigdorksonly", schema="dbt_output_dev")
     test_cnnx = test_api.get_cnnx()
     test_query = """
     SELECT *
-    FROM flipside.coingecko.historical_prices
+    FROM bigdorksonly.coingecko.historical_prices
     """
     test_df = test_api.run_get_query(test_query)
     print(test_df)

@@ -1,0 +1,116 @@
+version: 2
+
+models:
+    - name: curr_entity_bals
+      description: "A table storing total current on-chain balances aggregated on (entity, network, symbol)"
+      columns:
+          - name: entity
+            description: "Part of the primary key for this table"
+            tests:
+                - not_null
+          - name: network
+            description: "Part of the primary key for this table"
+            tests:
+                - not_null
+          - name: symbol
+            description: "Part of the primary key for this table"
+            tests:
+                - not_null
+    - name: curr_spot_prices
+      description: "A table storing the last asset market prices from Cryptowatch"
+      columns:
+          - name: asset
+            description: "The primary key for this table"
+            tests:
+                - unique
+                - not_null
+    - name: historical_trending_hourly
+      description: "A table storing the final set of trending scores joined with price & market data."
+      columns:
+          - name: cg_id
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: date
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: hour
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: time
+            description: "A primary key for this table"
+            tests:
+                - not_null
+      tests:
+          - unique:
+              column_name: "(cg_id || date || hour)"
+    - name: curr_trending_summary
+      description: "A table storing the latest set of stats for trending assets."
+      columns:
+          - name: cg_id
+            description: "A primary key for this table"
+            tests:
+                - unique
+                - not_null
+          - name: symbol
+            description: "A primary key for this table"
+            tests:
+                - unique
+                - not_null
+          - name: name
+            description: "A primary key for this table"
+            tests:
+                - unique
+                - not_null
+    - name: historical_trending_score_raw_enr
+      description: "A table storing the set of raw trending scores joined with logging metadata."
+      columns:
+          - name: cg_id
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: date
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: hour
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: time
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: trending_score
+            description: "A primary key for this table"
+            tests:
+                - not_null
+      tests:
+          - unique:
+              column_name: "(cg_id || time)"
+    - name: historical_trending_windows
+      description: "A table storing the final set of trending scores joined with price & market data with columns for moving window stats."
+      columns:
+          - name: cg_id
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: date
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: hour
+            description: "A primary key for this table"
+            tests:
+                - not_null
+          - name: time
+            description: "A primary key for this table"
+            tests:
+                - not_null
+      tests:
+          - unique:
+              column_name: "(cg_id || date || hour)"
+
+    

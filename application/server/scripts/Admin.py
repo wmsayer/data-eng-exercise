@@ -1,16 +1,27 @@
 import json
 import requests
 import numpy as np
+import logging
+from http.client import HTTPConnection # py3
 
 line_break = "/"*69
+
+
+def debug_requests_on():
+    '''Switches on logging of the requests module.'''
+    HTTPConnection.debuglevel = 1
+
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
 
 
 def json_load(f_path):
     """Loads a local JSON file as a Python dict"""
     with open(f_path) as f:
-        # f = open(f_path, )
         json_data = json.load(f)
-        # f.close()
     return json_data
 
 
@@ -39,7 +50,7 @@ def run_rest_get(url, params={}, headers={}, print_summ=True, print_resp=False):
     return json_dict, status_code
 
 
-def format_num_to_sig_figs(val, sig_figs=3, prefix="$"):
+def format_num_to_sig_figs(val, sig_figs=3, prefix="$", suffix=""):
     """Assumes single value, not array."""
     power = np.floor(np.log10(val))
 
@@ -52,7 +63,7 @@ def format_num_to_sig_figs(val, sig_figs=3, prefix="$"):
         unit_lab = ""
         new_val = val
 
-    new_val_str = prefix + ('{0:.%sg}' % sig_figs).format(new_val) + unit_lab
+    new_val_str = prefix + ('{0:.%sg}' % sig_figs).format(new_val) + unit_lab + suffix
     # print(f"OG val: {val} --- New val: {new_val_str}")
     return new_val_str
 
