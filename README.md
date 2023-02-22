@@ -52,7 +52,7 @@ SNOWFLAKE_PWD=XXXXXXXXXXXXXXXXXX
 SNOWFLAKE_ACCOUNT=XXXXXX.XX-XXXX-X.aws
 ```
 
-3. Setup yor Snowflake environment with the commands in `snowflake/snowflake_worksheet.txt`
+3. Setup your Snowflake environment with the commands in `snowflake/snowflake_worksheet.txt`
 4. Enable `Anaconda` via Admin > Billing & Terms. This allows dbt Python models to use Anaconda packages like `pandas`.
 
 return to [TOC](#table-of-contents)
@@ -174,7 +174,7 @@ crontab -e
 Go to the bottom and add the line below to run `main_data_log.py` every 6 hours (starting midnight UTC)
 
 ```
-* */6 * * * /home/ubuntu/data-eng-exercise/venv/bin/python /home/ubuntu/data-eng-exercise/application/server/main_data_log.py
+0 */6 * * * /home/ubuntu/data-eng-exercise/venv/bin/python /home/ubuntu/data-eng-exercise/application/server/main_data_log.py
 ```
 
 To test `main_data_log.py` prior to CRON running it, run manually w/ your venv activated:
