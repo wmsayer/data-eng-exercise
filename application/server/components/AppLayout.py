@@ -1,6 +1,5 @@
 from components.AppNavbar import build_app_navbar
 from components.AppDash import build_app_dash
-import dash_bootstrap_components as dbc
 from dash import html, dcc
 
 LOGO_IMG = "/assets/bgdx_logo.png"

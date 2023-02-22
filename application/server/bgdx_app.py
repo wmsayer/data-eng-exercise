@@ -1,19 +1,21 @@
-import numpy as np
+from components.AppLayout import build_app_layout
 import scripts.Admin as Admin
 import scripts.SnowflakeAPI as snwflk
 import app_data_io as app_data
-from components.AppLayout import build_app_layout
-import pandas as pd
+
+from flask import Flask
 import dash
+from dash import html, dash_table
 from dash.dash_table.Format import Format, Scheme, Sign, Symbol
-from dash import html, dcc
 from dash.dependencies import Input, Output
-from dash import dash_table
 import dash_bootstrap_components as dbc
+
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
-from flask import Flask
+
+import numpy as np
+import pandas as pd
 from sys import platform
 import math
 import datetime as dt

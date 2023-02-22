@@ -1,0 +1,5 @@
+wheel
+python-dotenv
+pandas
+numpy
+snowflake-connector-python
