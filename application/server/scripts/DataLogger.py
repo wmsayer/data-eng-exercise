@@ -4,6 +4,7 @@ import scripts.CryptowatchAPI as cw
 import logging
 import time
 import pathlib
+import datetime as dt
 
 PROJECT_ROOT = "%s" % pathlib.Path(__file__).parent.parent.parent.parent.absolute()
 
@@ -41,19 +42,20 @@ class DataLogger:
                             format='%(levelname)s: %(asctime)s %(message)s',
                             datefmt='%Y-%m-%d %H:%M:%S')
 
-    def log_data(self):
-        run_time = time.time()
-        logging.info(f"Run - {round(run_time)}")
+    def run_logger(self):
+        run_time = round(time.time())
+        run_time_str = dt.datetime.utcfromtimestamp(run_time).strftime("%Y-%m-%d %H:%M:%S")
+        logging.info("/" * 69)
+        logging.info(f"Run data logger - {run_time} ({run_time_str} UTC)")
+
         for api in self.apis:
             for log_i, log_dict in api.log_book.items():
                 delta = (run_time - log_dict["last_run"])
                 if log_dict["freq"] <= delta:
-                    logging.info(f"-----Running {log_i} at freq = {log_dict['freq']} (delta = {round(delta, 1)})-------")
+                    logging.info(
+                        f"-----Running {log_i} at freq = {log_dict['freq']} (delta = {round(delta, 1)})-------")
                     log_dict["last_run"] = run_time
                     log_dict["fn"]()
-        return run_time
 
-    def run_logger(self):
-        run_time = self.log_data()
-        logging.info(f"Run - {round(run_time)} complete.")
+        logging.info(f"Run - {run_time} complete.")
         logging.info("/" * 69)

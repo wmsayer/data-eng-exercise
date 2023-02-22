@@ -4,3 +4,4 @@ pandas
 numpy
 snowflake-connector-python
 shroomdk
+pyarrow
