@@ -20,6 +20,7 @@ This repository for [Big Dorks Only](https://bigdorksonly.io/) - a side project 
 ````
 .
 ├── application       # webapp server files
+├── data              # local cache directory for data logging (Git ignores all CSV's in this dir)
 ├── models            # dbt models (tables/views) that run during dbt job
 ├── seeds             # dbt tables loaded from CSVs during dbt job used to "seed" dbt models
 ├── snowflake         # worksheet of Snowflake commands to build out schema for raw data
