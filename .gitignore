@@ -2,7 +2,7 @@
 target/
 dbt_packages/
 venv/
-data/
+data/**.csv
 **/.idea/
 **/__pycache__/
 **/bgdx_app.sock

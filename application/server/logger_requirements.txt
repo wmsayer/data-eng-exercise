@@ -3,3 +3,4 @@ python-dotenv
 pandas
 numpy
 snowflake-connector-python
+shroomdk
