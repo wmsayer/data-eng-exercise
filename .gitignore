@@ -1,14 +1,13 @@
 
 target/
 dbt_packages/
-logs/
 venv/
 data/
 **/.idea/
 **/__pycache__/
-**/.streamlit/secrets.toml
 **/bgdx_app.sock
 **/Archive/
 analyses/
 macros/
 snapshots/
+**/data_log.txt

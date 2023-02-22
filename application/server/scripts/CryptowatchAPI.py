@@ -1,11 +1,12 @@
-from application.server.scripts.Admin import run_rest_get
-import application.server.scripts.SnowflakeAPI as snwflk
+import scripts.Admin as Admin
+import scripts.SnowflakeAPI as snwflk
 import pandas as pd
 from sys import platform
 from dotenv import load_dotenv
 import os
 import pathlib
 import math
+import logging
 
 
 PROJECT_ROOT = "%s" % pathlib.Path(__file__).parent.parent.parent.parent.absolute()
@@ -45,8 +46,8 @@ class CryptowatchAPI:
             check_sum += v["api_credits"]*(24*3600/v["freq"])
 
         if debug:
-            print(f"API Credits Target: {target_tol} --- APCredits Expected: {check_sum}")
-            print(pd.DataFrame(self.log_book).transpose().drop(columns="fn"))
+            logging.info(f"API Credits Target: {target_tol} --- APCredits Expected: {check_sum}")
+            logging.info(pd.DataFrame(self.log_book).transpose().drop(columns="fn"))
 
         assert(check_sum <= target_tol)
 
@@ -56,11 +57,11 @@ class CryptowatchAPI:
 
         cache_path = "/".join([PROJECT_ROOT, "data/cw_market_prices.csv"])
         if pull_new:
-            result_dict, status_code = run_rest_get(url, headers=header, print_summ=print_summ)
+            result_dict, status_code = Admin.run_rest_get(url, headers=header, print_summ=print_summ)
             result_df = pd.DataFrame(result_dict).reset_index(drop=False)
             result_df.to_csv(cache_path, index=False)
             if self.print_allow:
-                print(f"\tAllowance: {result_dict['allowance']}")
+                logging.info(f"\tAllowance: {result_dict['allowance']}")
         else:
             result_df = pd.read_csv(cache_path)
 

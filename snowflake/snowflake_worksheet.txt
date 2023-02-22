@@ -1,6 +1,6 @@
-create warehouse transforming;
-create warehouse application;
-create warehouse logging;
+-- create warehouse transforming;
+-- create warehouse application;
+-- create warehouse logging;
 
 create database bigdorksonly;
 

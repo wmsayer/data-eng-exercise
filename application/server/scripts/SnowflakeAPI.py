@@ -74,7 +74,7 @@ class SnowflakeAPI:
         success, nchunks, nrows, output = write_pandas(cnnx, df, table)
 
         if print_summ:
-            print(f"\tSnowflake success: {success}, Chunks: {nchunks}, Rows: {nrows}")
+            logging.info(f"\tSnowflake success: {success}, Chunks: {nchunks}, Rows: {nrows}")
 
 
 if __name__ == "__main__":

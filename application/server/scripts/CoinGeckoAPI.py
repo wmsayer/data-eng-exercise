@@ -1,7 +1,8 @@
-from application.server.scripts.Admin import run_rest_get
-import application.server.scripts.SnowflakeAPI as snwflk
+import scripts.Admin as Admin
+import scripts.SnowflakeAPI as snwflk
 import pandas as pd
 import time
+import logging
 import numpy as np
 import pathlib
 from sys import platform
@@ -36,7 +37,7 @@ class CoinGeckoAPI:
 
         self.log_book = {
             "coingecko-trending": {"fn": self.log_trending_src, "freq": 3600*6},
-            # "coingecko-trending-prices": {"fn": self.log_trending_prices, "freq": 3600*12},
+            "coingecko-trending-prices": {"fn": self.log_trending_prices, "freq": 3600*12},
             "coingecko-global": {"fn": self.get_global_mkt_cap, "freq": 3600*6},
             # "coingecko-historical_prices": {"fn": self.get_asset_mkt_chart, "freq": 3600*2},
         }
@@ -60,11 +61,11 @@ class CoinGeckoAPI:
 
     def log_trending_src(self, store_local=True, write_snwflk=True):
         url = "/".join([self.api_root, "search/trending"])
-        result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
+        result_dict, status_code = Admin.run_rest_get(url, params={}, print_summ=self.print_summ)
         while status_code != 200:
-            print(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
+            logging.info(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
             time.sleep(REQUEST_ERROR_SLEEP)  # sleep X seconds then try again
-            result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
+            result_dict, status_code = Admin.run_rest_get(url, params={}, print_summ=self.print_summ)
 
         result_df = pd.json_normalize(result_dict[self.data_key], record_prefix="")
         result_df.columns = [c.split(".")[1] for c in result_df.columns]
@@ -77,11 +78,11 @@ class CoinGeckoAPI:
             result_df_loc["_etl_timestamp"] = dt.datetime.now(pytz.utc)
             local_path = "/".join([PROJECT_ROOT, "data/cg_historical_trending_log.csv"])
             if os.path.isfile(local_path):
-                print(f"\tExisting log found at: {local_path}")
+                logging.info(f"\tExisting log found at: {local_path}")
                 existing_df = pd.read_csv(local_path)
                 write_df = pd.concat([existing_df, result_df_loc])
             else:
-                print(f"\tExisting log not found at: {local_path}")
+                logging.info(f"\tExisting log not found at: {local_path}")
                 write_df = result_df_loc
 
             write_df.to_csv(local_path, index=False)
@@ -105,7 +106,7 @@ class CoinGeckoAPI:
         }
 
         if self.assets:
-            result_dict, status_code = run_rest_get(url, params=params, print_summ=self.print_summ)
+            result_dict, status_code = Admin.run_rest_get(url, params=params, print_summ=self.print_summ)
             result_df = pd.DataFrame(result_dict).transpose()
             result_df.index.rename("asset", inplace=True)
             result_df = result_df.reset_index(drop=False)
@@ -141,17 +142,17 @@ class CoinGeckoAPI:
         for a in assets:
 
             if (count % every_Y_calls) == 0:
-                print("\tFrom CoinGeckoAPI.py >>> get_asset_mkt_chart(): Pausing %d sec for API..." % pause_X_sec)
+                logging.info("\tFrom CoinGeckoAPI.py >>> get_asset_mkt_chart(): Pausing %d sec for API..." % pause_X_sec)
                 time.sleep(pause_X_sec)
 
             a_id = cg_id_mapper.loc[a, "CG_ID"]
             url = "/".join([self.api_root, "coins", a_id, "market_chart"])
             params = {'vs_currency': base, 'days': days, "interval": interval}
-            result_dict, status_code = run_rest_get(url, params=params, print_summ=False)
+            result_dict, status_code = Admin.run_rest_get(url, params=params, print_summ=False)
             while status_code != 200:
-                print(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
+                logging.info(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
                 time.sleep(REQUEST_ERROR_SLEEP)  # sleep X seconds then try again
-                result_dict, status_code = run_rest_get(url, params=params, print_summ=False)
+                result_dict, status_code = Admin.run_rest_get(url, params=params, print_summ=False)
 
             result_df = pd.DataFrame()
             for k, v in result_dict.items():
@@ -188,11 +189,11 @@ class CoinGeckoAPI:
 
     def get_global_mkt_cap(self, write_snwflk=False, store_local=True):
         url = "/".join([self.api_root, "global"])
-        result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
+        result_dict, status_code = Admin.run_rest_get(url, params={}, print_summ=self.print_summ)
         while status_code != 200:
-            print(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
+            logging.info(f'\tStatus code: {status_code} --- Sleep {REQUEST_ERROR_SLEEP} seconds.')
             time.sleep(REQUEST_ERROR_SLEEP)  # sleep X seconds then try again
-            result_dict, status_code = run_rest_get(url, params={}, print_summ=self.print_summ)
+            result_dict, status_code = Admin.run_rest_get(url, params={}, print_summ=self.print_summ)
 
         result_dict = result_dict["data"]
         result_dict["total_market_cap"] = result_dict["total_market_cap"]["usd"]
@@ -209,11 +210,11 @@ class CoinGeckoAPI:
         if store_local:
             local_path = "/".join([PROJECT_ROOT, "data/cg_global_stats.csv"])
             if os.path.isfile(local_path):
-                print(f"\tExisting log found at: {local_path}")
+                logging.info(f"\tExisting log found at: {local_path}")
                 existing_df = pd.read_csv(local_path)
                 write_df = pd.concat([existing_df, result_df])
             else:
-                print(f"\tExisting log not found at: {local_path}")
+                logging.info(f"\tExisting log not found at: {local_path}")
                 write_df = result_df
             write_df.to_csv(local_path, index=False)
 
