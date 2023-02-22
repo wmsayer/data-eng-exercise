@@ -6,12 +6,12 @@ This repository for [Big Dorks Only](https://bigdorksonly.io/) - a side project 
 - Data is pulled from various public cryptocurrency APIs and stored into my Snowflake database
 - dbt is used to transform the data within Snowflake and load it into a new “output” schema
 - The webapp serves data directly from Snowflake
-- Data logging and ETL processes are fully automated - currently scheduled to run every 6 hours
+- Data logging and ETL processes are fully automated - data logger is scheduled to run **every 6 hours** starting at midnight UTC, and the ETL processes every 6 hours (30 minutes after the hour) 
 
 ### Built With
 - [dbt Cloud](https://www.getdbt.com/) - ETL processes
 - [Snowflake](https://www.snowflake.com/en/) - Cloud-based SQL database
-- [AWS](https://aws.amazon.com/) - EC2 Ubuntu instance to host the webapp 
+- [AWS](https://aws.amazon.com/) - EC2 Ubuntu instance to host the webapp and run data logging
 - [Flask](https://flask.palletsprojects.com/) - Python webapp framework
 - [Dash](https://plotly.com/dash/) - Data dashboards and webapp components
 - [Nginx](https://www.nginx.com/) - Front-end reverse proxy for the uWSGI server
