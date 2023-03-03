@@ -139,13 +139,16 @@ class CoinGeckoAPI:
         pause_X_sec = 60
         every_Y_calls = 9
 
-        for a in assets:
+        # ensures all assets are called even if they have the same symbol
+        a_ids = cg_id_mapper.loc[assets, "CG_ID"].to_list()
+        a_tups = zip(assets, a_ids)
+
+        for a_sym, a_id in a_tups:
 
             if (count % every_Y_calls) == 0:
                 logging.info("\tFrom CoinGeckoAPI.py >>> get_asset_mkt_chart(): Pausing %d sec for API..." % pause_X_sec)
                 time.sleep(pause_X_sec)
 
-            a_id = cg_id_mapper.loc[a, "CG_ID"]
             url = "/".join([self.api_root, "coins", a_id, "market_chart"])
             params = {'vs_currency': base, 'days': days, "interval": interval}
             result_dict, status_code = Admin.run_rest_get(url, params=params, print_summ=False)
@@ -164,7 +167,7 @@ class CoinGeckoAPI:
                     result_df = temp_df
 
             result_df["cg_id"] = a_id
-            result_df["symbol"] = a
+            result_df["symbol"] = a_sym
             result_df.sort_values("time", inplace=True)
             df_list.append(result_df)
 
