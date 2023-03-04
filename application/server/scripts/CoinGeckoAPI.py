@@ -225,17 +225,9 @@ class CoinGeckoAPI:
             snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db=self.snwflk_db)
             snwflk_api.write_df(result_df, table=f'GLOBAL_STATS', replace=False)
 
-    def init_snwflk_trending(self):
-        local_path = "/".join([PROJECT_ROOT, "data/cg_historical_trending_log.csv"])
-        existing_df = pd.read_csv(local_path)
-        existing_df.columns = [c.upper() for c in existing_df.columns]
-
-        snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db="BIGDORKSONLY")
-        snwflk_api.write_df(existing_df, table='TRENDING_LOG', replace=True)
-
 
 if __name__ == "__main__":
     test_assets = ["btc", "eth", "ada", "matic", "sol"]
     test_api = CoinGeckoAPI(test_assets)
-
-    test_api.init_snwflk_trending()
+    # test_api.init_snwflk_trending()
+    test_api.backup_table_local(table_name="TRENDING_LOG")
