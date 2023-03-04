@@ -11,3 +11,4 @@ analyses/
 macros/
 snapshots/
 **/data_log.txt
+data/backups/

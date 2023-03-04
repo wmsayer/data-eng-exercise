@@ -5,6 +5,8 @@ import logging
 import os
 from sys import platform
 from dotenv import load_dotenv
+import pathlib
+import time
 
 
 # to supress logging messages
@@ -67,22 +69,40 @@ class SnowflakeAPI:
             drop_query = f"DELETE FROM {self.db}.{self.schema}.{table}"
             self.run_query(drop_query)
 
-        # if print_summ:
-        #     print("Writing to Snowflake...")
-
         df.columns = [c.upper() for c in df.columns]
         success, nchunks, nrows, output = write_pandas(cnnx, df, table)
 
         if print_summ:
             logging.info(f"\tSnowflake success: {success}, Chunks: {nchunks}, Rows: {nrows}")
 
+    def init_snwflk_trending(self):
+        local_path = "/".join([PROJECT_ROOT, "data/cg_historical_trending_log.csv"])
+        existing_df = pd.read_csv(local_path)
+        existing_df.columns = [c.upper() for c in existing_df.columns]
+
+        # snwflk_api = snwflk.SnowflakeAPI(schema='COINGECKO', db="BIGDORKSONLY")
+        self.write_df(existing_df, table='TRENDING_LOG', replace=True)
+
+    def backup_table_local(self, table_name="TRENDING_LOG"):
+        query = f"SELECT * FROM {self.db}.{self.schema}.{table_name}"
+        backup_df = self.run_get_query(query)
+
+        write_fn = f"data/backups/{self.db}_{self.schema}_{table_name}_backup_{round(time.time())}.csv"
+        write_path = "/".join([PROJECT_ROOT, write_fn])
+        backup_df.to_csv(write_path, index=False)
+        print(backup_df)
+
 
 if __name__ == "__main__":
-    test_api = SnowflakeAPI(db="bigdorksonly", schema="dbt_output_dev")
-    test_cnnx = test_api.get_cnnx()
-    test_query = """
-    SELECT *
-    FROM bigdorksonly.coingecko.historical_prices
-    """
-    test_df = test_api.run_get_query(test_query)
-    print(test_df)
+    PROJECT_ROOT = "%s" % pathlib.Path(__file__).parent.parent.parent.parent.absolute()
+    test_backup_api = SnowflakeAPI(db="BIGDORKSONLY", schema="COINGECKO")
+    test_backup_api.backup_table_local()
+
+    # test_api = SnowflakeAPI(db="bigdorksonly", schema="dbt_output_dev")
+    # test_cnnx = test_api.get_cnnx()
+    # test_query = """
+    # SELECT *
+    # FROM bigdorksonly.coingecko.historical_prices
+    # """
+    # test_df = test_api.run_get_query(test_query)
+    # print(test_df)
