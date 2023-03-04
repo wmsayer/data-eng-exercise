@@ -250,7 +250,7 @@ def graph_trending_asset_grid(plt_id, mtx_lead):
             temp_metric = row["metric"]
             fig.add_trace(
                 go.Scatter(x=temp_df["Time"], y=temp_df[temp_metric], name=temp_metric),
-                row=math.ceil((i+1)/2), col=i%2+1
+                row=math.ceil((i+1)/2), col=i % 2+1
             )
             fig['layout'][f'yaxis{i+1}'].update(title_text=f'<b>{temp_metric}</b>')
 

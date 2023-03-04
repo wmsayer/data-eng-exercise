@@ -1,6 +1,5 @@
 import pandas as pd
 import scripts.SnowflakeAPI as snwflk
-from scripts.Admin import format_num_to_sig_figs
 
 
 class AppDataIO:
@@ -16,8 +15,9 @@ class AppDataIO:
         self.refresh_data()
 
     def refresh_data(self):
-        self.get_trending_data()
+        # self.get_trending_data()
         self.get_curr_trend_summ()
+        self.get_trending_data()
 
     def get_btc_price_data(self):
         query = """
@@ -40,10 +40,14 @@ class AppDataIO:
         result_df['TIME'] = pd.to_datetime(result_df['TIME'], utc=True)
         return result_df
 
-    def get_trending_data(self):
+    def get_trending_data(self, num_assets=15):
+        assets = self.assets_by_trending_24hr[:num_assets]
+        assets_str = ", ".join(["'" + a + "'" for a in assets])
+
         query = f"""
                 SELECT *
                 FROM BIGDORKSONLY.{self.dbt_env}.historical_trending_hourly
+                WHERE CG_ID IN ({assets_str})
             """
 
         result_df = self.snwflk_api.run_get_query(query)
@@ -57,9 +61,12 @@ class AppDataIO:
         result_df.columns = [c.replace("_", " ").title() for c in list(result_df.columns)]
 
         self.trending_df = result_df
+        self.trending_asset_ids = sorted(list(set(list(self.trending_df.index))))
 
     def get_available_asset_opts(self):
-        opts = [{'label': self.trending_projects_df.loc[cg_id, "Name"], 'value': cg_id} for cg_id in self.trending_asset_ids]
+        # opts = [{'label': self.trending_projects_df.loc[cg_id, "Name"], 'value': cg_id} for cg_id in self.trending_asset_ids]
+        opts = [{'label': self.trending_projects_df.loc[cg_id, "Name"], 'value': cg_id} for cg_id in
+                self.trending_asset_ids]
         return opts
 
     def get_curr_trend_summ(self):
@@ -85,7 +92,7 @@ class AppDataIO:
                 result_df[c] = 100 * result_df[c] / result_df[c].max()
 
         self.curr_trend_summ_df = result_df
-        self.trending_asset_ids = sorted(list(set(list(self.curr_trend_summ_df.index))))
+        # self.trending_asset_ids = sorted(list(set(list(self.curr_trend_summ_df.index))))
         self.assets_by_trending_24hr = list(result_df.sort_values(by="Trending Score 24Hr", ascending=False).index)
 
 
